@@ -1,16 +1,14 @@
 {
-  "name": "walkie-talkie-server",
-  "version": "4.0.0",
-  "description": "Server Socket.io - Walkie Talkie Web voi co che gianh mic, streaming audio gan real-time va Web Push thong bao khi co nguoi noi",
+  "name": "walkie-talkie-web",
+  "version": "5.0.0",
+  "description": "Bộ Đàm Web - QR Share, SOS, Owner Controls, Chat, Quality Indicators",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
-  },
-  "engines": {
-    "node": ">=18.x"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "express": "^4.18.2",
     "socket.io": "^4.7.5",
     "web-push": "^3.6.7"
   }
