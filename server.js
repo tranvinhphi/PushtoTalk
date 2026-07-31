@@ -1,10 +1,12 @@
 /**
  * Walkie Talkie Web App - Server
  * Node.js + Express + Socket.io
+ * v2.0.0
  *
- * Không dùng database. Trạng thái phòng được lưu tạm trong RAM (đủ dùng cho
- * quy mô nhỏ/vừa). Nếu server restart, danh sách phòng sẽ mất - đây là đánh
- * đổi hợp lý cho một app "không đăng nhập, không lưu trữ" như yêu cầu.
+ * Không dùng database. Trạng thái phòng lưu tạm trong RAM.
+ * Mỗi thành viên trong phòng được lưu dạng object:
+ *   { username, lat, lng }
+ * để phục vụ tính năng bản đồ vị trí thành viên.
  */
 
 const express = require('express');
@@ -21,25 +23,32 @@ const io = new Server(server, {
     origin: '*',
     methods: ['GET', 'POST'],
   },
-  // Audio blob của mỗi lượt nói có thể khá nặng, tăng giới hạn buffer mặc định
-  maxHttpBufferSize: 8 * 1024 * 1024, // 8MB
+  maxHttpBufferSize: 8 * 1024 * 1024, // 8MB cho audio blob
   pingTimeout: 20000,
   pingInterval: 10000,
 });
 
 app.get('/', (req, res) => {
-  res.send('Walkie Talkie Server đang chạy. Kết nối qua Socket.io.');
+  res.send('Walkie Talkie Server v2.0.0 đang chạy. Kết nối qua Socket.io.');
 });
 
-// health check cho Render
 app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
-// rooms[roomCode] = { [socketId]: username }
+// rooms[roomCode][socketId] = { username, lat, lng }
 const rooms = {};
 
 function getRoomUserList(roomCode) {
   if (!rooms[roomCode]) return [];
-  return Object.values(rooms[roomCode]);
+  return Object.entries(rooms[roomCode]).map(([id, data]) => ({
+    id,
+    username: data.username,
+    lat: data.lat,
+    lng: data.lng,
+  }));
+}
+
+function broadcastUserList(roomCode) {
+  io.to(roomCode).emit('user-list', getRoomUserList(roomCode));
 }
 
 function leaveCurrentRoom(socket) {
@@ -52,7 +61,7 @@ function leaveCurrentRoom(socket) {
   if (Object.keys(rooms[roomCode]).length === 0) {
     delete rooms[roomCode];
   } else {
-    io.to(roomCode).emit('user-list', getRoomUserList(roomCode));
+    broadcastUserList(roomCode);
     io.to(roomCode).emit('system-message', `${username || 'Một người dùng'} đã rời phòng.`);
   }
 }
@@ -74,7 +83,6 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Nếu đang ở phòng khác thì rời trước
     leaveCurrentRoom(socket);
 
     socket.join(roomCode);
@@ -82,13 +90,24 @@ io.on('connection', (socket) => {
     socket.data.username = username;
 
     if (!rooms[roomCode]) rooms[roomCode] = {};
-    rooms[roomCode][socket.id] = username;
+    rooms[roomCode][socket.id] = { username, lat: null, lng: null };
 
     socket.emit('joined', { roomCode, username });
-    io.to(roomCode).emit('user-list', getRoomUserList(roomCode));
+    broadcastUserList(roomCode);
     socket.to(roomCode).emit('system-message', `${username} đã vào phòng.`);
 
     console.log(`[Room ${roomCode}] ${username} đã tham gia. Tổng thành viên: ${Object.keys(rooms[roomCode]).length}`);
+  });
+
+  // Cập nhật vị trí GPS của thành viên (tuỳ chọn, chỉ gửi nếu người dùng cho phép)
+  socket.on('update-location', ({ lat, lng }) => {
+    const { roomCode } = socket.data;
+    if (!roomCode || !rooms[roomCode] || !rooms[roomCode][socket.id]) return;
+    if (typeof lat !== 'number' || typeof lng !== 'number') return;
+
+    rooms[roomCode][socket.id].lat = lat;
+    rooms[roomCode][socket.id].lng = lng;
+    broadcastUserList(roomCode);
   });
 
   socket.on('start-speaking', () => {
@@ -103,7 +122,6 @@ io.on('connection', (socket) => {
     socket.to(roomCode).emit('speaking-stop', { username });
   });
 
-  // audioBuffer: ArrayBuffer chứa toàn bộ đoạn ghi âm, gửi lên NGAY khi nhả nút
   socket.on('audio-data', (audioBuffer) => {
     const { roomCode, username } = socket.data;
     if (!roomCode || !audioBuffer) return;
@@ -118,5 +136,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server đang chạy tại cổng ${PORT}`);
+  console.log(`Server v2.0.0 đang chạy tại cổng ${PORT}`);
 });

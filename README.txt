@@ -1,12 +1,28 @@
-WalkieTalkieWeb - v1.0.1
+WalkieTalkieWeb - v2.0.0
 =========================
 
 Bo dam Web mien phi, chay tren trinh duyet (toi uu Safari/iPhone).
+UI phong kieu Paltalk: danh sach thanh vien, avatar mau, mic nhay len
+dau list khi dang noi, ban do vi tri thanh vien, che do bam-1-lan-de-noi
+an toan khi lai xe.
 
-Thay doi trong v1.0.1:
-- Man hinh vao phong: o "Ma phong" duoc dien san gia tri mac dinh
-  "PHONG01" de nguoi dung khong can tu nghi ma. Van co the sua neu
-  muon tao phong rieng khac.
+TINH NANG MOI TRONG v2.0.0:
+1. Danh sach thanh vien kieu Paltalk
+   - Avatar tron mau rieng theo ten (khong trung nhau)
+   - Nguoi dang noi tu dong nhay len dau danh sach
+   - Icon mic nhap nhay ben canh ten khi nguoi do dang noi
+2. Ban do vi tri thanh vien (Leaflet + OpenStreetMap, khong can API key)
+   - Sau khi vao phong, trinh duyet se hoi quyen vi tri (co the tu choi,
+     app van hoat dong binh thuong, chi khong hien tren ban do)
+   - Moi thanh vien co pin mau rieng tren ban do, ban do tu dong zoom
+     vua khung de thay het moi nguoi
+   - Tren mobile: co 2 tab "Thanh vien" / "Ban do" de chuyen doi
+3. Che do bam 1 lan de noi (an toan khi lai xe)
+   - Bam 1 lan vao nut mic -> tu dong GIU mic (khong can giu tay)
+   - Trong luc chuan bi: nut chuyen mau vang "DANG CHUAN BI..."
+   - Khi san sang: co tieng beep bao hieu + rung (neu may ho tro) +
+     nut chuyen xanh la "DANG NOI (bam de dung)"
+   - Bam lan nua -> dung noi, gui di, co tieng beep thap bao ket thuc
 
 Cau truc (tat ca trong 1 folder):
 - server.js       : Backend Node.js + Socket.io (deploy len Render)
@@ -21,4 +37,8 @@ Truoc khi deploy:
    thanh URL Render that.
 3. Deploy index.html len Vercel.
 
-Xem huong dan chi tiet trong phan chat da trao doi.
+Luu y:
+- Ban do dung tile mien phi cua OpenStreetMap, load truc tiep tu trinh
+  duyet nguoi dung (khong can server rieng, khong ton phi).
+- Vi tri GPS chi duoc gui len khi nguoi dung dong y cap quyen vi tri
+  cua trinh duyet/dien thoai.
