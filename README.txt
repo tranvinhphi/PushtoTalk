@@ -1,10 +1,15 @@
-WalkieTalkieWeb - v1.0.0
+WalkieTalkieWeb - v1.0.1
 =========================
 
 Bo dam Web mien phi, chay tren trinh duyet (toi uu Safari/iPhone).
 
-Cau truc:
-- server.js      : Backend Node.js + Socket.io (deploy len Render)
+Thay doi trong v1.0.1:
+- Man hinh vao phong: o "Ma phong" duoc dien san gia tri mac dinh
+  "PHONG01" de nguoi dung khong can tu nghi ma. Van co the sua neu
+  muon tao phong rieng khac.
+
+Cau truc (tat ca trong 1 folder):
+- server.js       : Backend Node.js + Socket.io (deploy len Render)
 - package.json    : Khai bao dependencies cho server
 - index.html      : Frontend HTML/JS thuan (deploy len Vercel)
 
