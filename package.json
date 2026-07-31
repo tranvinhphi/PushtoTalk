@@ -1,7 +1,7 @@
 {
   "name": "walkie-talkie-server",
-  "version": "2.0.0",
-  "description": "Server Socket.io cho ung dung Walkie Talkie Web - co ho tro vi tri GPS thanh vien",
+  "version": "4.0.0",
+  "description": "Server Socket.io - Walkie Talkie Web voi co che gianh mic, streaming audio gan real-time va Web Push thong bao khi co nguoi noi",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "express": "^4.19.2",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "web-push": "^3.6.7"
   }
 }
