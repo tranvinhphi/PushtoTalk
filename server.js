@@ -1,5 +1,5 @@
 /**
- * Walkie Talkie Web - Server v10.0.0
+ * Walkie Talkie Web - Server v10.1.0
  * NEW: force-camera-on request, force-mic-on request (with browser notification),
  *      owner distinct color flag sent to client
  */
@@ -32,82 +32,112 @@ function sendPushToUser(socketId,{title,body,tag},subMap){
 
 const io=new Server(server,{cors:{origin:'*',methods:['GET','POST']},maxHttpBufferSize:10*1024*1024,pingTimeout:20000,pingInterval:10000});
 
-app.get('/health',(_,res)=>res.json({status:'ok',version:'10.0.0'}));
+app.get('/health',(_,res)=>res.json({status:'ok',version:'10.1.0'}));
 
 // ══════════════════════════════════════════════════════════
-//  TTS ENDPOINT — Microsoft Edge TTS (miễn phí, không cần API key)
-//  Dùng npm package @andresaya/edge-tts
-//  Giọng Việt Neural: HoaiMyNeural (nữ Nam), NamMinhNeural (nam Nam)
-//                     HuongNeural (nữ Bắc), QuangAnh (nam Bắc)
+//  TTS ENDPOINT — Google Translate TTS (miễn phí, HTTPS, không WebSocket)
+//  Dùng API của Google Translate để tổng hợp giọng Việt
+//  Không cần API key, không cần đăng ký
 // ══════════════════════════════════════════════════════════
+const https_mod = require('https');
 
-// Map voice key → Microsoft Edge TTS voice name
-const EDGE_VOICES={
-  'nu-nam' :'vi-VN-HoaiMyNeural',    // nữ miền Nam, giọng đẹp nhất
-  'nu-bac' :'vi-VN-HuongNeural',     // nữ miền Bắc  (thực ra Edge chỉ có 2 giọng Việt)
-  'nam-nam':'vi-VN-NamMinhNeural',   // nam
-  'nam-bac':'vi-VN-NamMinhNeural',   // nam (dùng chung vì Edge chỉ có 2)
+// Map voice/lang
+const TTS_VOICES = {
+  'nu-nam' : {lang:'vi', tld:'com.vn'},   // giọng Việt Nam
+  'nu-bac' : {lang:'vi', tld:'com.vn'},
+  'nam-nam': {lang:'vi', tld:'com.vn'},
+  'nam-bac': {lang:'vi', tld:'com.vn'},
 };
 
-// Cache để tránh gọi lại cùng 1 text
-const ttsCache=new Map();
-const TTS_CACHE_MAX=150;
-function cacheKey(text,voice){return `${voice}::${text.substring(0,120)}`;}
+// Cache
+const ttsCache = new Map();
+const TTS_CACHE_MAX = 200;
+function cacheKey(text,voice){return `${voice}::${text.substring(0,200)}`;}
 
-let EdgeTTS=null;
-async function getEdgeTTS(){
-  if(EdgeTTS)return EdgeTTS;
-  try{
-    const mod=require('@andresaya/edge-tts');
-    EdgeTTS=mod.EdgeTTS||mod.default||mod;
-    return EdgeTTS;
-  }catch(e){
-    console.error('[TTS] @andresaya/edge-tts chưa cài. Chạy: npm install @andresaya/edge-tts');
-    return null;
+// Chia text thành chunks <= 200 ký tự (giới hạn của Google TTS)
+function splitText(text, maxLen=200){
+  const chunks=[];
+  const sentences=text.replace(/([.!?。！？])\s*/g,'$1
+').split('
+');
+  let cur='';
+  for(const s of sentences){
+    if(!s.trim())continue;
+    if((cur+s).length>maxLen){
+      if(cur)chunks.push(cur.trim());
+      // nếu câu vẫn dài hơn maxLen thì cắt từng đoạn
+      if(s.length>maxLen){
+        for(let i=0;i<s.length;i+=maxLen)chunks.push(s.slice(i,i+maxLen));
+        cur='';
+      } else cur=s+' ';
+    } else cur+=s+' ';
   }
+  if(cur.trim())chunks.push(cur.trim());
+  return chunks.length?chunks:[text.substring(0,200)];
+}
+
+function fetchGoogleTTS(text, lang='vi', tld='com.vn'){
+  return new Promise((resolve,reject)=>{
+    const encoded=encodeURIComponent(text);
+    const url=`https://translate.google.${tld}/translate_tts?ie=UTF-8&q=${encoded}&tl=${lang}&total=1&idx=0&textlen=${text.length}&client=tw-ob&prev=input&ttsspeed=1`;
+    const opts={
+      headers:{
+        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+        'Referer':`https://translate.google.${tld}/`,
+        'Accept':'audio/mpeg,audio/*;q=0.9,*/*;q=0.8',
+      }
+    };
+    https_mod.get(url,opts,res=>{
+      const chunks=[];
+      res.on('data',d=>chunks.push(d));
+      res.on('end',()=>{
+        const buf=Buffer.concat(chunks);
+        if(res.statusCode===200&&buf.length>100)resolve(buf);
+        else reject(new Error(`Status ${res.statusCode}, size ${buf.length}`));
+      });
+    }).on('error',reject);
+  });
 }
 
 app.post('/tts',express.json(),async(req,res)=>{
   const {text='',voice='nu-nam',speed=1.0}=req.body||{};
-  if(!text||text.length>500)return res.status(400).json({error:'text required, max 500 chars'});
+  if(!text||text.length>800)return res.status(400).json({error:'text required, max 800 chars'});
 
   const ck=cacheKey(text,voice);
   if(ttsCache.has(ck)){
-    const cached=ttsCache.get(ck);
     res.setHeader('Content-Type','audio/mpeg');
-    return res.end(Buffer.from(cached,'base64'));
+    res.setHeader('Cache-Control','public,max-age=7200');
+    return res.end(ttsCache.get(ck));
   }
 
-  const voiceName=EDGE_VOICES[voice]||EDGE_VOICES['nu-nam'];
-  try{
-    const ETTSClass=await getEdgeTTS();
-    if(!ETTSClass)return res.status(503).json({error:'edge-tts module not loaded'});
+  const {lang,tld}=TTS_VOICES[voice]||TTS_VOICES['nu-nam'];
+  const chunks=splitText(text);
 
-    const tts=new ETTSClass();
-    // rate: speed 1.0 → "+0%", speed 1.2 → "+20%"
-    const rateStr=speed===1?'+0%':`+${Math.round((speed-1)*100)}%`;
-    await tts.generate(
-      {text,voice:voiceName,rate:rateStr,pitch:'+0Hz',volume:'+0%'},
-      {output_format:'audio-24khz-48kbitrate-mono-mp3'}
-    );
-    const audioBase64=await tts.toBase64();
-    const audioBuf=Buffer.from(audioBase64,'base64');
+  try{
+    // Fetch tất cả chunks song song
+    const buffers=await Promise.all(chunks.map(chunk=>fetchGoogleTTS(chunk,lang,tld)));
+    const combined=Buffer.concat(buffers);
 
     // Cache
-    if(ttsCache.size>=TTS_CACHE_MAX)ttsCache.delete(ttsCache.keys().next().value);
-    ttsCache.set(ck,audioBase64);
+    if(ttsCache.size>=TTS_CACHE_MAX){
+      const firstKey=ttsCache.keys().next().value;
+      ttsCache.delete(firstKey);
+    }
+    ttsCache.set(ck,combined);
 
     res.setHeader('Content-Type','audio/mpeg');
-    res.setHeader('Cache-Control','public,max-age=3600');
-    res.end(audioBuf);
+    res.setHeader('Cache-Control','public,max-age=7200');
+    res.end(combined);
   }catch(e){
-    console.error('[TTS] Edge TTS error:',e.message);
-    res.status(503).json({error:'TTS failed: '+e.message});
+    console.error('[TTS] Google TTS error:',e.message);
+    res.status(503).json({error:'TTS unavailable: '+e.message});
   }
 });
 
 app.get('/tts/voices',(_,res)=>{
-  res.json(Object.entries(EDGE_VOICES).map(([k,v])=>({key:k,voice:v})));
+  res.json([
+    {key:'nu-nam',label:'Giọng Việt (Google)'},
+  ]);
 });
 app.get('/vapid-public-key',(_,res)=>res.json({key:VAPID_PUBLIC_KEY}));
 
@@ -429,4 +459,4 @@ io.on('connection',socket=>{
 });
 
 const PORT=process.env.PORT||3000;
-server.listen(PORT,()=>console.log(`Server v10.0.0 on port ${PORT}`));
+server.listen(PORT,()=>console.log(`Server v10.1.0 on port ${PORT}`));
