@@ -1,5 +1,5 @@
 /**
- * Walkie Talkie Web - Server v10.1.0
+ * Walkie Talkie Web - Server v10.1.1
  * NEW: force-camera-on request, force-mic-on request (with browser notification),
  *      owner distinct color flag sent to client
  */
@@ -32,7 +32,7 @@ function sendPushToUser(socketId,{title,body,tag},subMap){
 
 const io=new Server(server,{cors:{origin:'*',methods:['GET','POST']},maxHttpBufferSize:10*1024*1024,pingTimeout:20000,pingInterval:10000});
 
-app.get('/health',(_,res)=>res.json({status:'ok',version:'10.1.0'}));
+app.get('/health',(_,res)=>res.json({status:'ok',version:'10.1.1'}));
 
 // ══════════════════════════════════════════════════════════
 //  TTS ENDPOINT — Google Translate TTS (miễn phí, HTTPS, không WebSocket)
@@ -57,9 +57,7 @@ function cacheKey(text,voice){return `${voice}::${text.substring(0,200)}`;}
 // Chia text thành chunks <= 200 ký tự (giới hạn của Google TTS)
 function splitText(text, maxLen=200){
   const chunks=[];
-  const sentences=text.replace(/([.!?。！？])\s*/g,'$1
-').split('
-');
+  const sentences=text.split(/[.!?\u3002\uff01\uff1f]+/).filter(s=>s.trim());
   let cur='';
   for(const s of sentences){
     if(!s.trim())continue;
@@ -459,4 +457,4 @@ io.on('connection',socket=>{
 });
 
 const PORT=process.env.PORT||3000;
-server.listen(PORT,()=>console.log(`Server v10.1.0 on port ${PORT}`));
+server.listen(PORT,()=>console.log(`Server v10.1.1 on port ${PORT}`));
