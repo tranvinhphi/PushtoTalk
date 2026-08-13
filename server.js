@@ -311,6 +311,15 @@ io.on('connection',socket=>{
     const {roomCode:code,username}=socket.data;if(!code||!username||!text)return;
     const msg=String(text).trim().substring(0,300);if(!msg)return;
     io.to(code).emit('chat-message',{username,text:msg,ts:Date.now()});
+    // Push notification cho người đang ở tab khác
+    // Gửi kèm nội dung để SW trigger TTS
+    sendPushToRoom(code,{
+      title:`💬 ${username}`,
+      body:msg.length>80?msg.substring(0,80)+'…':msg,
+      tag:'botdam-chat',
+      chatText:msg,
+      sender:username,
+    },socket.id);
   });
 
   socket.on('kick-user',({targetId})=>{
