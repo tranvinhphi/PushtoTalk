@@ -35,132 +35,79 @@ const io=new Server(server,{cors:{origin:'*',methods:['GET','POST']},maxHttpBuff
 app.get('/health',(_,res)=>res.json({status:'ok',version:'10.0.0'}));
 
 // ══════════════════════════════════════════════════════════
-//  TTS ENDPOINT — gọi Zalo AI (primary) → ViettelAI (fallback)
-//  Browser gọi POST /tts với {text, voice}
-//  Server trả {audio: "base64 mp3", source: "zalo|viettel|error"}
+//  TTS ENDPOINT — Microsoft Edge TTS (miễn phí, không cần API key)
+//  Dùng npm package @andresaya/edge-tts
+//  Giọng Việt Neural: HoaiMyNeural (nữ Nam), NamMinhNeural (nam Nam)
+//                     HuongNeural (nữ Bắc), QuangAnh (nam Bắc)
 // ══════════════════════════════════════════════════════════
-const https_mod=require('https');
-const http_mod=require('http');
 
-// Giọng Zalo: 1=nữ Nam, 2=nữ Bắc, 3=nam Nam, 4=nam Bắc
-// Giọng ViettelAI: hcm-diemmy, hn-thanh, hcm-minhquang, hn-thanhlong...
-const ZALO_VOICES={
-  'nu-nam':1,'nu-bac':2,'nam-nam':3,'nam-bac':4
-};
-const VIETTEL_VOICES={
-  'nu-nam':'hcm-diemmy','nu-bac':'hn-thanh',
-  'nam-nam':'hcm-minhquang','nam-bac':'hn-thanhlong'
+// Map voice key → Microsoft Edge TTS voice name
+const EDGE_VOICES={
+  'nu-nam' :'vi-VN-HoaiMyNeural',    // nữ miền Nam, giọng đẹp nhất
+  'nu-bac' :'vi-VN-HuongNeural',     // nữ miền Bắc  (thực ra Edge chỉ có 2 giọng Việt)
+  'nam-nam':'vi-VN-NamMinhNeural',   // nam
+  'nam-bac':'vi-VN-NamMinhNeural',   // nam (dùng chung vì Edge chỉ có 2)
 };
 
-async function fetchBuffer(url,options){
-  return new Promise((resolve,reject)=>{
-    const mod=url.startsWith('https')?https_mod:http_mod;
-    const req=mod.request(url,options,res=>{
-      const chunks=[];
-      res.on('data',d=>chunks.push(d));
-      res.on('end',()=>resolve({status:res.statusCode,buffer:Buffer.concat(chunks),headers:res.headers}));
-    });
-    req.on('error',reject);
-    if(options.body)req.write(options.body);
-    req.end();
-  });
-}
-
-async function ttsZalo(text,voiceId=1,speed=1.0){
-  // Zalo AI public demo endpoint — không cần API key, rate limit ~30 req/min
-  const body=JSON.stringify({input:text,speaker_id:voiceId,speed,dict_id:0,quality:0});
-  try{
-    const r=await fetchBuffer('https://api.zalo.ai/v1/tts/synthesize',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body),
-        'Origin':'https://zalo.ai','Referer':'https://zalo.ai/'},
-      body,timeout:8000,
-    });
-    if(r.status===200){
-      const j=JSON.parse(r.buffer.toString());
-      if(j.data?.url){
-        // Tải audio từ URL trả về
-        const ar=await fetchBuffer(j.data.url,{method:'GET',timeout:8000});
-        if(ar.status===200)return ar.buffer;
-      }
-    }
-  }catch(e){console.log('[TTS] Zalo error:',e.message)}
-  return null;
-}
-
-async function ttsVieNeuLocal(text,voice='nu-nam',speed=1.0){
-  // Gọi VieNeu local server (nếu có VIENEU_LOCAL_URL trong env)
-  const url=process.env.VIENEU_LOCAL_URL;
-  if(!url)return null;
-  const body=JSON.stringify({text,voice,speed});
-  try{
-    const r=await fetchBuffer(url,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)},
-      body,timeout:15000,
-    });
-    if(r.status===200){const j=JSON.parse(r.buffer.toString());if(j.audio)return Buffer.from(j.audio,'base64')}
-  }catch(e){console.log('[TTS] VieNeu local error:',e.message)}
-  return null;
-}
-
-async function ttsViettel(text,voice='hcm-diemmy',speed=1.0){
-  const body=JSON.stringify({speed,voice,text,tts_return_option:3,without_filter:false});
-  try{
-    const r=await fetchBuffer('https://viettelai.vn/tts/speech_synthesis',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body),
-        'Connection':'keep-alive'},
-      body,timeout:10000,
-    });
-    if(r.status===200&&r.buffer.length>1000)return r.buffer;
-  }catch(e){console.log('[TTS] ViettelAI error:',e.message)}
-  return null;
-}
-
-// Cache đơn giản để tránh gọi lại cùng 1 text
+// Cache để tránh gọi lại cùng 1 text
 const ttsCache=new Map();
-const TTS_CACHE_MAX=100;
+const TTS_CACHE_MAX=150;
 function cacheKey(text,voice){return `${voice}::${text.substring(0,120)}`;}
+
+let EdgeTTS=null;
+async function getEdgeTTS(){
+  if(EdgeTTS)return EdgeTTS;
+  try{
+    const mod=require('@andresaya/edge-tts');
+    EdgeTTS=mod.EdgeTTS||mod.default||mod;
+    return EdgeTTS;
+  }catch(e){
+    console.error('[TTS] @andresaya/edge-tts chưa cài. Chạy: npm install @andresaya/edge-tts');
+    return null;
+  }
+}
 
 app.post('/tts',express.json(),async(req,res)=>{
   const {text='',voice='nu-nam',speed=1.0}=req.body||{};
   if(!text||text.length>500)return res.status(400).json({error:'text required, max 500 chars'});
-  
+
   const ck=cacheKey(text,voice);
   if(ttsCache.has(ck)){
     const cached=ttsCache.get(ck);
-    return res.json({audio:cached.audio,source:cached.source+'(cache)'});
+    res.setHeader('Content-Type','audio/mpeg');
+    return res.end(Buffer.from(cached,'base64'));
   }
 
-  const zaloVoiceId=ZALO_VOICES[voice]||1;
-  const viettelVoiceId=VIETTEL_VOICES[voice]||'hcm-diemmy';
+  const voiceName=EDGE_VOICES[voice]||EDGE_VOICES['nu-nam'];
+  try{
+    const ETTSClass=await getEdgeTTS();
+    if(!ETTSClass)return res.status(503).json({error:'edge-tts module not loaded'});
 
-  // 1. Thử Zalo AI
-  let buf=await ttsZalo(text,zaloVoiceId,speed);
-  let source='zalo';
+    const tts=new ETTSClass();
+    // rate: speed 1.0 → "+0%", speed 1.2 → "+20%"
+    const rateStr=speed===1?'+0%':`+${Math.round((speed-1)*100)}%`;
+    await tts.generate(
+      {text,voice:voiceName,rate:rateStr,pitch:'+0Hz',volume:'+0%'},
+      {output_format:'audio-24khz-48kbitrate-mono-mp3'}
+    );
+    const audioBase64=await tts.toBase64();
+    const audioBuf=Buffer.from(audioBase64,'base64');
 
-  // 2. Fallback ViettelAI
-  if(!buf){
-    buf=await ttsViettel(text,viettelVoiceId,speed);
-    source='viettel';
+    // Cache
+    if(ttsCache.size>=TTS_CACHE_MAX)ttsCache.delete(ttsCache.keys().next().value);
+    ttsCache.set(ck,audioBase64);
+
+    res.setHeader('Content-Type','audio/mpeg');
+    res.setHeader('Cache-Control','public,max-age=3600');
+    res.end(audioBuf);
+  }catch(e){
+    console.error('[TTS] Edge TTS error:',e.message);
+    res.status(503).json({error:'TTS failed: '+e.message});
   }
+});
 
-  // 3. Fallback VieNeu Local (nếu có VIENEU_LOCAL_URL)
-  if(!buf){
-    buf=await ttsVieNeuLocal(text,voice,speed);
-    source='vieneu-local';
-  }
-
-  if(!buf){
-    return res.status(503).json({error:'Tất cả TTS đều không phản hồi',source:'none'});
-  }
-
-  const audio=buf.toString('base64');
-  // Cache
-  if(ttsCache.size>=TTS_CACHE_MAX)ttsCache.delete(ttsCache.keys().next().value);
-  ttsCache.set(ck,{audio,source});
-  res.json({audio,source});
+app.get('/tts/voices',(_,res)=>{
+  res.json(Object.entries(EDGE_VOICES).map(([k,v])=>({key:k,voice:v})));
 });
 app.get('/vapid-public-key',(_,res)=>res.json({key:VAPID_PUBLIC_KEY}));
 
