@@ -1,5 +1,5 @@
 /**
- * Walkie Talkie Web - Server v10.1.1
+ * Walkie Talkie Web - Server v10.2.0
  * NEW: force-camera-on request, force-mic-on request (with browser notification),
  *      owner distinct color flag sent to client
  */
@@ -32,111 +32,9 @@ function sendPushToUser(socketId,{title,body,tag},subMap){
 
 const io=new Server(server,{cors:{origin:'*',methods:['GET','POST']},maxHttpBufferSize:10*1024*1024,pingTimeout:20000,pingInterval:10000});
 
-app.get('/health',(_,res)=>res.json({status:'ok',version:'10.1.1'}));
+app.get('/health',(_,res)=>res.json({status:'ok',version:'10.2.0'}));
 
-// ══════════════════════════════════════════════════════════
-//  TTS ENDPOINT — Google Translate TTS (miễn phí, HTTPS, không WebSocket)
-//  Dùng API của Google Translate để tổng hợp giọng Việt
-//  Không cần API key, không cần đăng ký
-// ══════════════════════════════════════════════════════════
-const https_mod = require('https');
-
-// Map voice/lang
-const TTS_VOICES = {
-  'nu-nam' : {lang:'vi', tld:'com.vn'},   // giọng Việt Nam
-  'nu-bac' : {lang:'vi', tld:'com.vn'},
-  'nam-nam': {lang:'vi', tld:'com.vn'},
-  'nam-bac': {lang:'vi', tld:'com.vn'},
-};
-
-// Cache
-const ttsCache = new Map();
-const TTS_CACHE_MAX = 200;
-function cacheKey(text,voice){return `${voice}::${text.substring(0,200)}`;}
-
-// Chia text thành chunks <= 200 ký tự (giới hạn của Google TTS)
-function splitText(text, maxLen=200){
-  const chunks=[];
-  const sentences=text.split(/[.!?\u3002\uff01\uff1f]+/).filter(s=>s.trim());
-  let cur='';
-  for(const s of sentences){
-    if(!s.trim())continue;
-    if((cur+s).length>maxLen){
-      if(cur)chunks.push(cur.trim());
-      // nếu câu vẫn dài hơn maxLen thì cắt từng đoạn
-      if(s.length>maxLen){
-        for(let i=0;i<s.length;i+=maxLen)chunks.push(s.slice(i,i+maxLen));
-        cur='';
-      } else cur=s+' ';
-    } else cur+=s+' ';
-  }
-  if(cur.trim())chunks.push(cur.trim());
-  return chunks.length?chunks:[text.substring(0,200)];
-}
-
-function fetchGoogleTTS(text, lang='vi', tld='com.vn'){
-  return new Promise((resolve,reject)=>{
-    const encoded=encodeURIComponent(text);
-    const url=`https://translate.google.${tld}/translate_tts?ie=UTF-8&q=${encoded}&tl=${lang}&total=1&idx=0&textlen=${text.length}&client=tw-ob&prev=input&ttsspeed=1`;
-    const opts={
-      headers:{
-        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-        'Referer':`https://translate.google.${tld}/`,
-        'Accept':'audio/mpeg,audio/*;q=0.9,*/*;q=0.8',
-      }
-    };
-    https_mod.get(url,opts,res=>{
-      const chunks=[];
-      res.on('data',d=>chunks.push(d));
-      res.on('end',()=>{
-        const buf=Buffer.concat(chunks);
-        if(res.statusCode===200&&buf.length>100)resolve(buf);
-        else reject(new Error(`Status ${res.statusCode}, size ${buf.length}`));
-      });
-    }).on('error',reject);
-  });
-}
-
-app.post('/tts',express.json(),async(req,res)=>{
-  const {text='',voice='nu-nam',speed=1.0}=req.body||{};
-  if(!text||text.length>800)return res.status(400).json({error:'text required, max 800 chars'});
-
-  const ck=cacheKey(text,voice);
-  if(ttsCache.has(ck)){
-    res.setHeader('Content-Type','audio/mpeg');
-    res.setHeader('Cache-Control','public,max-age=7200');
-    return res.end(ttsCache.get(ck));
-  }
-
-  const {lang,tld}=TTS_VOICES[voice]||TTS_VOICES['nu-nam'];
-  const chunks=splitText(text);
-
-  try{
-    // Fetch tất cả chunks song song
-    const buffers=await Promise.all(chunks.map(chunk=>fetchGoogleTTS(chunk,lang,tld)));
-    const combined=Buffer.concat(buffers);
-
-    // Cache
-    if(ttsCache.size>=TTS_CACHE_MAX){
-      const firstKey=ttsCache.keys().next().value;
-      ttsCache.delete(firstKey);
-    }
-    ttsCache.set(ck,combined);
-
-    res.setHeader('Content-Type','audio/mpeg');
-    res.setHeader('Cache-Control','public,max-age=7200');
-    res.end(combined);
-  }catch(e){
-    console.error('[TTS] Google TTS error:',e.message);
-    res.status(503).json({error:'TTS unavailable: '+e.message});
-  }
-});
-
-app.get('/tts/voices',(_,res)=>{
-  res.json([
-    {key:'nu-nam',label:'Giọng Việt (Google)'},
-  ]);
-});
+// TTS handled client-side via ViettelAI direct call
 app.get('/vapid-public-key',(_,res)=>res.json({key:VAPID_PUBLIC_KEY}));
 
 const rooms={},roomMeta={},roomOwners={},micHolders={},micTimeouts={},approvalQueue={},voiceMemos={};
@@ -457,4 +355,4 @@ io.on('connection',socket=>{
 });
 
 const PORT=process.env.PORT||3000;
-server.listen(PORT,()=>console.log(`Server v10.1.1 on port ${PORT}`));
+server.listen(PORT,()=>console.log(`Server v10.2.0 on port ${PORT}`));
