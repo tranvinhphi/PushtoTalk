@@ -2,30 +2,28 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover,shrink-to-fit=no"/>
 <title>Bộ Đàm Web</title>
 <link rel="manifest" href="manifest.json"/>
-<meta name="theme-color" content="#0a0a0a"/>
+<meta name="theme-color" content="#0d1117"/>
 <link rel="icon" href="icon-192.png"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
-<meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Bộ Đàm"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-/* ═══ TRAILTAK DARK STYLE ══════════════════════════════════ */
+/* ═══ TRAILTAK DARK STYLE v11.0.5 ═══════════════════════ */
 :root{
-  --bg:#0a0a0a;--bg2:#121212;--surf:#1a1a1a;--surf2:#222222;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.12);
+  --bg:#0a0a0a;--bg2:#111111;--surf:#1a1a1a;--surf2:#222222;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
   --green:#39FF14;--greens:rgba(57,255,20,0.12);
   --orange:#FF5F1F;--oranges:rgba(255,95,31,0.2);
-  --blue:#3b82f6;--blues:rgba(59,130,246,0.2);
+  --blue:#3b82f6;--blues:rgba(59,130,246,0.18);
+  --warn:#f59e0b;--warns:rgba(245,158,11,0.15);
   --red:#ef4444;--reds:rgba(239,68,68,0.15);
-  --warn:#f59e0b;
   --gold:#fbbf24;
-  --text:#ffffff;--text2:#a1a1aa;--text3:#52525b;--text4:#3f3f46;
-  --glass:rgba(18,18,18,0.85);
-  --glass2:rgba(18,18,18,0.70);
+  --text:#ffffff;--text2:#a0a0a0;--text3:#555555;
   --sb:env(safe-area-inset-bottom,0px);
   --st:env(safe-area-inset-top,0px);
   --sl:env(safe-area-inset-left,0px);
@@ -36,8 +34,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   font-family:-apple-system,BlinkMacSystemFont,"Inter","SF Pro Text",sans-serif;
   user-select:none;overscroll-behavior:none}
 button{font-family:inherit;border:none;cursor:pointer;background:none;color:inherit}
-input,select,textarea{font-family:inherit;color:inherit}
-::-webkit-scrollbar{width:0;height:0}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
 /* ── UTILS ─────────────────────────────────────────────── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .12s}
@@ -46,29 +44,31 @@ input,select,textarea{font-family:inherit;color:inherit}
 .btn-g{background:var(--green);color:#000}
 .btn-o{background:var(--orange);color:#fff}
 .btn-s{background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--border2)}
-.btn-r{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
-.btn-full{width:100%}.btn-lg{padding:14px 20px;font-size:15px}.btn-sm{padding:5px 11px;font-size:12px;border-radius:9px}
-.inp{width:100%;padding:11px 14px;font-size:14px;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.05);color:var(--text);outline:none;transition:border-color .14s}
+.btn-r{background:var(--reds);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-b{background:var(--blues);color:var(--blue);border:1px solid rgba(59,130,246,.3)}
+.btn-full{width:100%}.btn-lg{padding:14px 20px;font-size:15px;border-radius:14px}.btn-sm{padding:5px 11px;font-size:12px;border-radius:8px}
+.inp{width:100%;padding:11px 14px;font-size:14px;border-radius:12px;border:1.5px solid var(--border2);background:rgba(255,255,255,.05);color:var(--text);outline:none;transition:border-color .14s}
 .inp:focus{border-color:var(--green)}.inp::placeholder{color:var(--text3)}
 .lbl{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.05em}
 .fg{margin-bottom:12px}
-.tog{width:44px;height:26px;border-radius:999px;background:var(--text4);position:relative;cursor:pointer;transition:background .18s;flex-shrink:0;border:none}
+.tog{width:44px;height:26px;border-radius:999px;background:rgba(255,255,255,.15);position:relative;cursor:pointer;transition:background .18s;flex-shrink:0;border:none}
 .tog.on{background:var(--green)}.tog::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:0 2px 6px rgba(0,0,0,.4)}.tog.on::after{transform:translateX(18px)}
-.glass{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border)}
-.glass2{background:var(--glass2);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.hint{font-size:11px;color:var(--text3);line-height:1.6;margin-top:4px}
+.card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.sec{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;padding:0 2px}
 
-/* ── NON-ROOM SCREENS ──────────────────────────────────── */
-.screen{display:none;min-height:100dvh;flex-direction:column;overflow-y:auto}
+/* ── NON-ROOM SCREENS ─────────────────────────────────── */
+.screen{display:none;min-height:100dvh;flex-direction:column;overflow-y:auto;background:var(--bg)}
 .screen.active{display:flex}
-#joinScreen{background:radial-gradient(ellipse 70% 50% at 50% 0%,#1a2814,var(--bg) 70%)}
+#joinScreen{background:radial-gradient(ellipse 70% 50% at 50% 0%,#0d1f0d,var(--bg) 70%)}
 .join-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(28px + var(--st)) 20px calc(24px + var(--sb));gap:14px}
 .j-logo{width:72px;height:72px;border-radius:20px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 10px 40px rgba(57,255,20,.4)}
 .j-title{font-size:24px;font-weight:900;letter-spacing:-.03em}
 .j-sub{font-size:13px;color:var(--text2);margin-top:-8px}
-.j-card{width:100%;max-width:380px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;padding:20px}
+.j-card{width:100%;max-width:380px;background:rgba(255,255,255,.04);border:1.5px solid var(--border2);border-radius:20px;padding:20px}
 .j-card h3{font-size:10px;font-weight:800;color:var(--text3);margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em}
 .j-err{color:var(--red);font-size:12px;text-align:center;margin-top:10px;font-weight:700;min-height:16px}
-.jdiv{display:flex;align-items:center;gap:10px;color:var(--text4);font-size:12px;width:100%;max-width:380px}
+.jdiv{display:flex;align-items:center;gap:10px;color:var(--text3);font-size:12px;width:100%;max-width:380px}
 .jdiv::before,.jdiv::after{content:'';flex:1;height:1px;background:var(--border)}
 .cr-card{width:100%;max-width:380px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .cr-hdr{display:flex;align-items:center;gap:8px;padding:13px 16px;font-size:13px;font-weight:700;color:var(--text2);background:transparent;width:100%;border:none;cursor:pointer}
@@ -78,14 +78,14 @@ input,select,textarea{font-family:inherit;color:inherit}
 .cr-body.open{display:flex}
 .trow{display:flex;align-items:center;justify-content:space-between;padding:7px 0}
 .trow .tl{font-size:13px;font-weight:600}.trow .ts{font-size:11px;color:var(--text3);margin-top:1px}
-.topbar{display:flex;align-items:center;gap:10px;padding:calc(10px + var(--st)) 16px 10px;background:var(--glass);border-bottom:1px solid var(--border);flex-shrink:0;backdrop-filter:blur(16px)}
+.topbar{display:flex;align-items:center;gap:10px;padding:calc(10px + var(--st)) 16px 10px;background:rgba(0,0,0,.6);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);flex-shrink:0}
 .topbar h2{font-size:16px;font-weight:900;flex:1;letter-spacing:-.02em}
-.ib{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ib{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .ib:active{transform:scale(.88)}
 .page{flex:1;overflow-y:auto;padding:12px 16px 24px}
 .sw{position:relative;margin-bottom:12px}
 .sw .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none}
-.rc{display:flex;align-items:center;gap:12px;padding:13px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--border);margin-bottom:9px;cursor:pointer;transition:border-color .15s}
+.rc{display:flex;align-items:center;gap:12px;padding:13px;border-radius:14px;background:rgba(255,255,255,.04);border:1.5px solid var(--border);margin-bottom:9px;cursor:pointer;transition:border-color .15s}
 .rc:active{border-color:var(--green)}
 .rc-ico{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
 .rc-info{flex:1;min-width:0}.rc-name{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rc-sub{font-size:11.5px;color:var(--text2);margin-top:3px}
@@ -93,94 +93,92 @@ input,select,textarea{font-family:inherit;color:inherit}
 .badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;border-radius:999px;padding:2px 7px;border:1px solid}
 .bdg-g{background:var(--greens);color:var(--green);border-color:rgba(57,255,20,.3)}
 .bdg-b{background:var(--blues);color:var(--blue);border-color:rgba(59,130,246,.3)}
+.bdg-w{background:var(--warns);color:var(--warn);border-color:rgba(245,158,11,.3)}
 .empt{text-align:center;padding:44px 16px;color:var(--text2);font-size:13px;line-height:1.8}
 .spw{display:flex;flex-direction:column;align-items:center;padding:48px 0;gap:12px;color:var(--text2);font-size:13px}
-.spn{width:28px;height:28px;border:3px solid var(--text4);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
+.spn{width:28px;height:28px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-#waitScreen{background:var(--bg);align-items:center;justify-content:center;padding:40px 24px;text-align:center;gap:16px}
+#waitScreen{align-items:center;justify-content:center;padding:40px 24px;text-align:center;gap:16px}
 .wi{font-size:56px;animation:wP 2s ease-in-out infinite}
 @keyframes wP{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 .wt{font-size:20px;font-weight:800;letter-spacing:-.02em}.ws{font-size:13px;color:var(--text2);line-height:1.7}
 
-/* ══════════════════════════════════════════════════════════
-   ROOM — TRAILTAK STYLE
-   Full screen dark map + glass UI overlay
-══════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════
+   ROOM SCREEN — TrailTalk dark map style
+   Giữ nguyên grid layout v10, chỉ thay màu sắc/style
+════════════════════════════════════════════════════════ */
 #roomScreen{
-  display:none;width:100%;height:100dvh;
-  position:relative;overflow:hidden;background:#0a0a0a;
+  display:none;width:100%;
+  height:100dvh;height:100svh;
+  grid-template-rows:
+    auto   /* header */
+    auto   /* banners */
+    auto   /* av-strip */
+    1fr    /* content */
+    auto   /* ptt-zone */
+    auto;  /* tabbar */
+  overflow:hidden;background:var(--bg);
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  box-sizing:border-box;
 }
-#roomScreen.active{display:block}
+#roomScreen.active{display:grid}
 
-/* MAP — full screen */
-#mapFull{position:absolute;inset:0;z-index:1}
-
-/* Map gradient overlay — top fade dark, bottom strong dark */
-.map-vignette{
-  position:absolute;inset:0;z-index:2;pointer-events:none;
-  background:linear-gradient(180deg,
-    rgba(0,0,0,.75) 0%,
-    rgba(0,0,0,.1) 25%,
-    rgba(0,0,0,.05) 50%,
-    rgba(0,0,0,.4) 70%,
-    rgba(0,0,0,.9) 100%);
-}
-
-/* ── TOP HEADER nổi trên map ────────────────────────── */
-.rhdr{
-  position:absolute;top:0;left:0;right:0;z-index:30;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:calc(10px + var(--st)) calc(14px + var(--sr)) 10px calc(14px + var(--sl));
-}
-.rhdr-left{display:flex;flex-direction:column;gap:2px}
-.rname{font-size:17px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase}
-.rsub{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
-.rdot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
-.rdot.warn{background:var(--warn);box-shadow:0 0 8px var(--warn);animation:blink .8s infinite}
+/* HEADER — dark glass */
+.rhdr{grid-row:1;display:flex;align-items:center;gap:6px;
+  padding:calc(8px + var(--st)) calc(10px + var(--sr)) 8px calc(10px + var(--sl));
+  background:rgba(0,0,0,.7);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);flex-shrink:0;z-index:10;
+  width:100%;box-sizing:border-box;overflow:hidden;}
+.rchip{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:12px;
+  padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.08);
+  border:1px solid var(--border2);cursor:pointer;flex-shrink:1;min-width:0;max-width:120px}
+.rchip span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rd{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0}
+.rd.warn{background:var(--warn);box-shadow:0 0 8px var(--warn);animation:blink .8s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.rhdr-right{display:flex;align-items:center;gap:8px}
-.rha{width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;font-size:16px;border:1px solid var(--border2);color:var(--text)}
-.rha:active{transform:scale(.88);background:rgba(255,255,255,.1)}
-.rha.on{background:rgba(57,255,20,.15);border-color:rgba(57,255,20,.4);color:var(--green)}
 
-/* Status button */
-#statusWrap{position:relative;z-index:500}
-#statusBtn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);border:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);white-space:nowrap}
+/* Status wrap */
+#statusWrap{position:relative;flex-shrink:0;z-index:200}
+#statusBtn{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:20px;
+  background:rgba(255,255,255,.08);border:1px solid var(--border2);
+  font-size:11px;font-weight:700;color:var(--text);white-space:nowrap}
 #statusDrop{
   display:none;position:fixed;left:10px;right:10px;
-  background:rgba(12,12,12,.97);border:1px solid var(--border2);
-  border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.9);
-  z-index:9999;overflow:hidden;backdrop-filter:blur(24px)
-}
+  background:rgba(8,8,8,.97);border:1px solid var(--border2);border-radius:20px;
+  box-shadow:0 24px 60px rgba(0,0,0,.9);z-index:9999;overflow:hidden;
+  backdrop-filter:blur(24px);}
 #statusDrop.open{display:block}
 .sdrop-title{padding:12px 16px 6px;font-size:9px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
 .sopt{width:100%;padding:13px 16px;text-align:left;font-size:13px;font-weight:700;display:flex;align-items:center;gap:14px;border:none;background:transparent;color:var(--text);border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer}
 .sopt:last-child{border-bottom:none}
-.sopt:active,.sopt.active-s{background:rgba(255,255,255,.05)}
-.sopt-ico{font-size:18px;width:26px;text-align:center;flex-shrink:0}
+.sopt:active,.sopt.active-s{background:rgba(255,255,255,.06)}
 .sopt-info{display:flex;flex-direction:column;gap:2px}
 .sopt-lbl{font-size:13px;font-weight:800}
 .sopt-sub{font-size:11px;color:var(--text2);font-weight:400}
 
-/* Map controls floating buttons */
-.map-ctrl{position:absolute;right:14px;z-index:20;display:flex;flex-direction:column;gap:8px}
-.mc-btn{width:44px;height:44px;border-radius:14px;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--text2);transition:all .15s}
-.mc-btn:active{transform:scale(.9)}
-.mc-btn.blue{background:var(--blue);color:#fff;border-color:transparent;box-shadow:0 4px 16px rgba(59,130,246,.4)}
+.racts{display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0}
+.ra-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;min-width:40px}
+.ra-wrap:active .ra{transform:scale(.88)}
+.ra-wrap.on .ra{background:var(--greens);border-color:rgba(57,255,20,.4);color:var(--green)}
+.ra{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.07);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all .13s}
+.ra-lbl{font-size:7px;font-weight:700;color:var(--text3);white-space:nowrap}
+.ra-wrap.on .ra-lbl{color:var(--green)}
 
-/* Banners */
-.banners{position:absolute;z-index:25;left:0;right:0;display:flex;flex-direction:column}
+/* BANNERS */
+.banners{grid-row:2;display:flex;flex-direction:column;flex-shrink:0;z-index:10}
 .ban{display:none;padding:7px 14px;font-size:12px;font-weight:700;text-align:center}
 .ban.show{display:block}
 .ban-recon{background:rgba(245,158,11,.85);color:#000;backdrop-filter:blur(8px)}
-.ban-ios{background:rgba(59,130,246,.85);color:#fff;backdrop-filter:blur(8px)}
+.ban-ios{background:rgba(59,130,246,.85);color:#fff}
 .ban-ios b{font-weight:900}.ban-ios .bx{float:right;cursor:pointer;padding:0 4px}
-.vmemo{display:none;padding:8px 14px;background:rgba(255,95,31,.88);backdrop-filter:blur(8px)}
+.vmemo{display:none;padding:8px 14px;background:rgba(255,95,31,.88)}
 .vmemo.show{display:block}
 .vmemo-row{display:flex;align-items:center;gap:8px}
 .vmemo-btn{padding:4px 10px;border-radius:8px;background:rgba(255,255,255,.25);color:#fff;font-size:11px;font-weight:800;border:none;cursor:pointer}
 .vmemo-info{flex:1;font-size:11px;color:rgba(255,255,255,.85)}
 .vmemo-x{font-size:14px;color:rgba(255,255,255,.6);border:none;background:none;cursor:pointer}
+.aprv-ban{display:none;padding:7px 14px;background:rgba(245,158,11,.85);color:#000}
+.aprv-ban.show{display:block}
 .req-ban{display:none;padding:10px 16px;animation:slideD .3s ease}
 .req-ban.show{display:block}
 @keyframes slideD{from{transform:translateY(-12px);opacity:0}to{transform:none;opacity:1}}
@@ -193,78 +191,84 @@ input,select,textarea{font-family:inherit;color:inherit}
 .req-sub{font-size:11px;color:rgba(255,255,255,.8)}
 .req-btns{display:flex;gap:6px;flex-shrink:0}
 
-/* ── BOTTOM SHEET ─────────────────────────────────────── */
-.bottom-sheet{
-  position:absolute;bottom:0;left:0;right:0;z-index:40;
-  display:flex;flex-direction:column;
-  border-radius:28px 28px 0 0;
-  background:var(--glass);
-  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-  border-top:1px solid var(--border2);
-  transition:height .3s cubic-bezier(.4,0,.2,1);
-}
-.bs-handle-wrap{display:flex;justify-content:center;padding:10px 0 4px;flex-shrink:0;cursor:pointer}
-.bs-handle{width:36px;height:4px;background:rgba(255,255,255,.2);border-radius:2px}
-
-/* Members section header */
-.bs-members-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 16px 6px;flex-shrink:0}
-.bs-members-title{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
-.bs-members-count{font-size:10px;font-weight:700;color:var(--green)}
-
-/* Horizontal scrollable member cards */
-.av-strip{
-  display:flex;gap:0;overflow-x:auto;padding:4px 14px 6px;
-  -webkit-overflow-scrolling:touch;flex-shrink:0;
-  scroll-snap-type:x mandatory;
-}
+/* AVATAR STRIP — row 3 */
+.av-strip{grid-row:3;display:flex;gap:0;overflow-x:auto;padding:8px 10px 6px;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch;flex-shrink:0}
 .av-strip::-webkit-scrollbar{display:none}
-.av-item{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:68px;flex-shrink:0;scroll-snap-align:start;padding:0 4px;cursor:pointer}
-.av-ring{width:52px;height:52px;border-radius:50%;padding:2.5px;position:relative;flex-shrink:0}
+.av-item{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:62px;flex-shrink:0;padding:0 4px}
+.av-ring{width:46px;height:46px;border-radius:50%;padding:2.5px;flex-shrink:0;position:relative}
 .av-ring.idle{background:rgba(255,255,255,.12)}
-.av-ring.speaking{background:var(--green);animation:aPulse 1.2s ease-in-out infinite;box-shadow:0 0 0 0 rgba(57,255,20,.4)}
-.av-ring.owner-r{background:var(--gold)}
-.av-ring.me-r{background:var(--blue)}
-@keyframes aPulse{0%,100%{box-shadow:0 0 0 0 rgba(57,255,20,.4)}50%{box-shadow:0 0 0 8px rgba(57,255,20,0)}}
-.av-inner{width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;border:2.5px solid rgba(0,0,0,.5)}
-.av-name{font-size:9px;font-weight:700;color:var(--text2);text-align:center;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.av-stat{font-size:8px;font-weight:800;color:var(--text3);text-transform:uppercase}
-.av-stat.sp{color:var(--green)}
+.av-ring.speaking{background:var(--green);animation:rPop 1.2s ease-in-out infinite}
+.av-ring.owner-ring{background:var(--gold)}
+.av-ring.me-ring{background:var(--blue)}
+@keyframes rPop{0%,100%{box-shadow:0 0 0 0 rgba(57,255,20,.4)}50%{box-shadow:0 0 0 7px rgba(57,255,20,0)}}
+.av-inner{width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;border:2px solid rgba(0,0,0,.6)}
+.av-name{font-size:9px;font-weight:700;color:var(--text2);text-align:center;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.av-status{font-size:8px;font-weight:700;color:var(--text3)}
+.av-status.speaking{color:var(--green)}
 
-/* Content panels (chat / members / settings) inside sheet */
-.content-panel{
-  display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden;
-  position:absolute;inset:0;border-radius:28px 28px 0 0;
-  background:rgba(8,8,8,.98);backdrop-filter:blur(20px);z-index:5;
-}
-.content-panel.active{display:flex}
-.cp-hdr{display:flex;align-items:center;gap:10px;padding:16px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
-.cp-title{font-size:15px;font-weight:900;flex:1;letter-spacing:-.02em}
-.cp-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text2)}
-.cp-close:active{transform:scale(.88)}
+/* CONTENT — row 4 */
+.content{grid-row:4;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.panel{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0}
+.panel.active{display:flex}
 
-/* Full member list */
-.mlist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;display:flex;flex-direction:column}
-.mrow{display:flex;align-items:center;gap:11px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s}
-.mrow:active{background:rgba(255,255,255,.04)}
-.mrow.speaking{background:rgba(57,255,20,.07);border-bottom-color:rgba(57,255,20,.15)}
+/* MAP panel */
+#panelMap{position:relative}
+#mapFull{width:100%;height:100%}
+.map-empty-ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:var(--text2);font-size:13px;flex-direction:column;gap:8px;pointer-events:none;
+  background:rgba(0,0,0,.4)}
+.map-empty-ov .mei{font-size:32px}
+/* Dark map tiles */
+#mapFull .leaflet-tile{filter:brightness(.75) saturate(.6)}
+
+/* Chat */
+.chat-msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px;display:flex;flex-direction:column;gap:5px;background:var(--bg)}
+.csys{align-self:center;font-size:10.5px;color:var(--text3);padding:3px 10px;background:rgba(255,255,255,.06);border-radius:999px;margin:2px 0}
+.cmsg{display:flex;flex-direction:column;max-width:80%}
+.cmsg.me{align-self:flex-end;align-items:flex-end}
+.cmsg.other{align-self:flex-start}
+.bubble{padding:9px 13px;border-radius:18px;font-size:14px;line-height:1.45;word-break:break-word}
+.cmsg.me .bubble{background:var(--green);color:#000;border-bottom-right-radius:5px;font-weight:700}
+.cmsg.other .bubble{background:rgba(255,255,255,.1);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:5px}
+.cmeta{font-size:10px;color:var(--text3);margin-top:3px;padding:0 3px}
+.chat-input-row{display:flex;gap:7px;padding:8px 12px;border-top:1px solid var(--border);background:rgba(0,0,0,.6);backdrop-filter:blur(12px);flex-shrink:0}
+.chat-inp{flex:1;padding:10px 14px;border-radius:22px;border:1.5px solid var(--border);background:rgba(255,255,255,.07);color:var(--text);font-size:14px;outline:none}
+.chat-inp:focus{border-color:var(--green)}
+.csend{width:42px;height:42px;border-radius:50%;background:var(--green);color:#000;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;font-weight:900}
+.csend:active{transform:scale(.88)}
+.cemoji{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cemoji:active{transform:scale(.88)}
+
+/* Members */
+.mlist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 10px;display:flex;flex-direction:column;gap:4px;background:var(--bg)}
+.mrow{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);transition:all .15s}
+.mrow.speaking{background:var(--greens);border-color:rgba(57,255,20,.3)}
+.mrow.muted-r{opacity:.55}
+.mrow.new-j{animation:rowIn .3s ease}
+@keyframes rowIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .mrow.is-owner{border-left:3px solid var(--gold)}
 .mav-wrap{position:relative;flex-shrink:0}
-.mav{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;border:2.5px solid transparent;overflow:hidden}
-.mav.owner-av{border-color:var(--gold)}
-.mav.speaking-av{border-color:var(--green);box-shadow:0 0 0 3px rgba(57,255,20,.25);animation:avPulse 1.3s ease-in-out infinite}
-@keyframes avPulse{0%,100%{box-shadow:0 0 0 3px rgba(57,255,20,.25)}50%{box-shadow:0 0 0 7px rgba(57,255,20,.05)}}
-.mcrown{position:absolute;left:-5px;top:-5px;font-size:12px}
-.mol{position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid #0a0a0a}
+.mav{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff}
+.mav.owner-av{box-shadow:0 0 0 2.5px var(--gold)}
+.mol{position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--bg)}
+.mcrown{position:absolute;left:-5px;top:-6px;font-size:13px}
 .minfo{flex:1;min-width:0}
 .mname{font-size:13px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
-.msub{font-size:10.5px;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.mrow.speaking .mname,.mrow.speaking .msub{color:var(--green)}
-.qb{font-size:9px;padding:1px 5px;border-radius:5px;border:1px solid var(--border);background:var(--surf2);font-weight:700}
+.msub{font-size:10.5px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.mrow.speaking .msub{color:var(--green)}
+.qb{font-size:9px;padding:1px 5px;border-radius:5px;border:1px solid var(--border);background:rgba(255,255,255,.06);font-weight:600}
 .qb.g{border-color:rgba(57,255,20,.4);color:var(--green);background:var(--greens)}
-.owbtns{flex-shrink:0}
-.owb-btn{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--border);font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.qb.o{border-color:rgba(245,158,11,.4);color:var(--warn);background:var(--warns)}
+.qb.r{border-color:rgba(239,68,68,.4);color:var(--red);background:var(--reds)}
+.mwave{width:18px;height:18px;flex-shrink:0;color:var(--green);opacity:0;transform:scale(.5);transition:opacity .15s,transform .15s}
+.mrow.speaking .mwave{opacity:1;transform:scale(1);animation:mBl 1s ease-in-out infinite}
+@keyframes mBl{0%,100%{opacity:1}50%{opacity:.35}}
+.owbtns{position:relative;flex-shrink:0}
+.owb-btn{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.07);border:1px solid var(--border);font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
 .owb-btn:active{transform:scale(.88)}
-.owb-drop{display:none;position:fixed;background:rgba(10,10,10,.97);border:1px solid var(--border2);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.9);z-index:9999;min-width:210px;overflow:hidden;backdrop-filter:blur(24px)}
+.owb-drop{display:none;position:fixed;background:rgba(8,8,8,.97);border:1px solid var(--border2);border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.9);z-index:9999;min-width:210px;overflow:hidden;backdrop-filter:blur(20px)}
 .owb-drop.open{display:block}
 .owb-drop-title{padding:10px 14px 6px;font-size:9px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
 .owb-drop-item{width:100%;padding:12px 14px;text-align:left;font-size:13px;font-weight:700;display:flex;align-items:center;gap:10px;border:none;background:transparent;color:var(--text);border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer}
@@ -272,27 +276,9 @@ input,select,textarea{font-family:inherit;color:inherit}
 .owb-drop-item:active{background:rgba(255,255,255,.05)}
 .owb-drop-item.danger{color:var(--red)}.owb-drop-item.warn{color:var(--warn)}.owb-drop-item.blue{color:var(--blue)}.owb-drop-item.green{color:var(--green)}
 
-/* CHAT */
-.chat-msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 14px;display:flex;flex-direction:column;gap:6px}
-.csys{align-self:center;font-size:10.5px;color:var(--text3);padding:3px 10px;background:rgba(255,255,255,.05);border-radius:999px;margin:2px 0}
-.cmsg{display:flex;flex-direction:column;max-width:80%}
-.cmsg.me{align-self:flex-end;align-items:flex-end}
-.cmsg.other{align-self:flex-start}
-.bubble{padding:10px 13px;border-radius:18px;font-size:14px;line-height:1.45;word-break:break-word}
-.cmsg.me .bubble{background:var(--green);color:#000;border-bottom-right-radius:5px;font-weight:700}
-.cmsg.other .bubble{background:rgba(255,255,255,.09);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:5px}
-.cmeta{font-size:10px;color:var(--text3);margin-top:3px;padding:0 3px}
-.chat-input-row{display:flex;gap:8px;padding:9px 14px;border-top:1px solid var(--border);background:rgba(8,8,8,.98);flex-shrink:0;padding-bottom:calc(9px + var(--sb))}
-.chat-inp{flex:1;padding:10px 14px;border-radius:22px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);font-size:14px;outline:none}
-.chat-inp:focus{border-color:var(--green)}
-.csend{width:42px;height:42px;border-radius:50%;background:var(--green);color:#000;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;font-weight:900}
-.csend:active{transform:scale(.88);background:#2ce010}
-.cemoji{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.cemoji:active{transform:scale(.88)}
-
 /* Settings */
-.set-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 14px calc(16px + var(--sb));display:flex;flex-direction:column;gap:8px}
-.set-section{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.set-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px calc(16px + var(--sb));display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.set-section{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:8px}
 .set-item{display:flex;align-items:center;gap:12px;padding:13px;border-bottom:1px solid rgba(255,255,255,.05)}
 .set-item:last-child{border-bottom:none}
 .set-icon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
@@ -301,85 +287,74 @@ input,select,textarea{font-family:inherit;color:inherit}
 .set-sub{font-size:11px;color:var(--text3);margin-top:2px}
 .set-ctrl{flex-shrink:0;margin-left:8px}
 .set-inp-wrap{padding:10px 14px 14px}
-.sec{font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;padding:0 2px}
 .aprv-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:11px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);margin-bottom:6px}
-.tts-prov-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
-.tts-prov-row:last-child{border-bottom:none}
 
-/* ── PTT ZONE — TrailTalk style ─────────────────────── */
-.ptt-zone{
-  flex-shrink:0;border-top:1px solid var(--border);padding:14px 20px calc(12px + var(--sb));
-  display:flex;align-items:center;justify-content:space-between;
-  background:transparent;position:relative;
-}
-#reactLayer{position:absolute;bottom:100%;left:0;right:0;height:80px;pointer-events:none;overflow:visible;z-index:50}
-/* Side controls */
-.ptt-side{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px}
-.ptt-side-btn{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:19px}
-.ptt-side-btn:active{transform:scale(.88);background:rgba(255,255,255,.12)}
-.ptt-side-lbl{font-size:8px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;text-align:center}
-
-/* Center PTT */
-.ptt-center{display:flex;flex-direction:column;align-items:center;gap:6px}
-.stat-line{font-size:11px;font-weight:700;color:var(--text3);text-align:center;min-height:14px}
-.stat-line.talking{color:var(--green)}.stat-line.remote{color:var(--orange)}
-.ptt-outer{position:relative;width:96px;height:96px;display:flex;align-items:center;justify-content:center}
-.ptt-wave-r{position:absolute;inset:-16px;border-radius:50%;border:2.5px solid rgba(255,255,255,.1);pointer-events:none}
-.ptt-outer.talking .ptt-wave-r{border-color:var(--orange);animation:pWave 1.4s ease-out infinite}
-@keyframes pWave{0%{transform:scale(.78);opacity:.8}100%{transform:scale(1.8);opacity:0}}
-#pttBtn{
-  width:88px;height:88px;border-radius:50%;
-  /* TrailTalk orange gradient */
-  background:linear-gradient(135deg,#FF5F1F 0%,#FF8C00 100%);
-  border:8px solid rgba(0,0,0,.8);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  transition:all .1s;position:relative;z-index:1;
-  box-shadow:0 0 30px rgba(255,95,31,.4),0 8px 24px rgba(0,0,0,.5);
-  color:#fff;
-}
-#pttBtn svg{width:28px;height:28px;color:#fff;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
-#pttBtn .ptt-txt{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;line-height:1.2;color:#fff}
-#pttBtn.locked{background:rgba(60,60,60,.8);box-shadow:none;border-color:rgba(0,0,0,.6);opacity:.55;pointer-events:none}
-#pttBtn.locked svg{color:var(--text3)}
-#pttBtn.preparing{background:linear-gradient(135deg,#ca8a04,#f59e0b);box-shadow:0 0 0 8px rgba(245,158,11,.15),0 0 30px rgba(245,158,11,.35)}
-#pttBtn.talking{background:linear-gradient(135deg,#16a34a,#39FF14);box-shadow:0 0 0 10px rgba(57,255,20,.15),0 0 40px rgba(57,255,20,.4);border-color:rgba(0,0,0,.4)}
-#pttBtn:active:not(.locked){transform:scale(.91)}
-
-/* SOS button */
-.sos-btn{padding:0 14px;height:52px;border-radius:50%;min-width:52px;
-  background:rgba(220,38,38,.15);border:1px solid rgba(239,68,68,.4);
-  color:var(--red);font-size:11px;font-weight:900;letter-spacing:.04em;
-  display:flex;align-items:center;justify-content:center}
-.sos-btn:active{transform:scale(.88);background:rgba(220,38,38,.3)}
-
-/* ── TABBAR ─────────────────────────────────────────── */
-.tabbar{
-  flex-shrink:0;display:flex;background:transparent;
-  border-top:1px solid rgba(255,255,255,.06);
-  padding-bottom:var(--sb);
-}
-.ti{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 4px 5px;cursor:pointer;border:none;background:transparent;transition:opacity .14s;position:relative;min-width:0}
-.ti:active{opacity:.55}
-.ti .tii{font-size:20px;line-height:1.15;transition:transform .15s}
-.ti .til{font-size:9px;font-weight:800;color:var(--text3);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
-.ti.active .til{color:var(--green)}
-.ti.active .tii{transform:scale(1.1)}
-.ti .tdot{position:absolute;top:6px;right:calc(50% - 18px);width:8px;height:8px;border-radius:50%;background:var(--red);border:1.5px solid #0a0a0a;display:none}
-.ti.has-dot .tdot{display:block}
-
-/* Video grid */
-#videoGrid{display:none;flex-wrap:wrap;gap:4px;padding:4px 12px;flex-shrink:0}
+/* Video */
+#videoGrid{display:none;flex-wrap:wrap;gap:4px;padding:4px 10px;flex-shrink:0}
 #videoGrid.vis{display:flex}
 .vtile{position:relative;border-radius:10px;overflow:hidden;background:var(--surf2);border:1px solid var(--border);flex:1;min-width:80px;max-width:calc(50% - 2px);aspect-ratio:4/3}
 .vtile canvas{width:100%;height:100%;object-fit:cover;display:block}
 .vname{position:absolute;bottom:0;left:0;right:0;padding:4px 7px;font-size:10px;font-weight:700;background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);color:#fff}
 .voff{position:absolute;top:4px;right:4px;background:rgba(239,68,68,.85);color:#fff;font-size:9px;border-radius:6px;padding:2px 6px;cursor:pointer;font-weight:700;border:none}
 
-/* ── MODALS ─────────────────────────────────────────── */
+/* PTT ZONE — row 5 — TrailTalk orange style */
+.ptt-zone{grid-row:5;display:flex;align-items:center;justify-content:space-around;
+  padding:12px 20px calc(10px);background:rgba(0,0,0,.7);backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);flex-shrink:0;position:relative}
+#reactLayer{position:absolute;bottom:100%;left:0;right:0;height:70px;pointer-events:none;overflow:visible;z-index:50}
+
+/* PTT center */
+.ptt-center-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.stat-line{font-size:11px;font-weight:700;color:var(--text3);text-align:center;min-height:14px}
+.stat-line.talking{color:var(--green)}.stat-line.preparing{color:var(--warn)}.stat-line.remote{color:var(--orange)}
+.ptt-outer{position:relative;width:84px;height:84px;display:flex;align-items:center;justify-content:center}
+.ptt-ring{position:absolute;inset:-12px;border-radius:50%;border:2.5px solid var(--orange);opacity:0;pointer-events:none}
+.ptt-outer.talking .ptt-ring{opacity:1;animation:pRing 1.4s ease-out infinite}
+@keyframes pRing{0%{transform:scale(.8);opacity:.7}100%{transform:scale(1.8);opacity:0}}
+#pttBtn{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,#FF5F1F 0%,#FF8C00 100%);
+  border:6px solid rgba(0,0,0,.7);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  transition:all .1s;z-index:1;position:relative;
+  box-shadow:0 0 28px rgba(255,95,31,.45),0 8px 20px rgba(0,0,0,.5);
+  color:#fff;
+}
+#pttBtn svg{width:26px;height:26px;color:#fff}
+#pttBtn .ptt-txt{font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#fff;line-height:1.3;text-align:center}
+#pttBtn.locked{background:rgba(50,50,50,.8);box-shadow:none;border-color:rgba(0,0,0,.5);opacity:.5;pointer-events:none}
+#pttBtn.locked svg{color:rgba(255,255,255,.3)}
+#pttBtn.preparing{background:linear-gradient(135deg,#ca8a04,#f59e0b);box-shadow:0 0 0 8px rgba(245,158,11,.15),0 0 28px rgba(245,158,11,.4)}
+#pttBtn.talking{background:linear-gradient(135deg,#16a34a,#39FF14);box-shadow:0 0 0 10px rgba(57,255,20,.18),0 0 36px rgba(57,255,20,.45)}
+#pttBtn:active:not(.locked){transform:scale(.9)}
+.ptt-lbl{font-size:8.5px;font-weight:900;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;text-align:center}
+.ptt-lbl.talking{color:var(--green)}.ptt-lbl.preparing{color:var(--warn)}
+
+/* PTT side buttons */
+.ptt-side{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:56px}
+.ptt-side-btn{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:18px}
+.ptt-side-btn:active{transform:scale(.88)}
+.ptt-side-lbl{font-size:8px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;text-align:center}
+.sos-btn-ptt{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:var(--red);font-size:11px;font-weight:900}
+.sos-btn-ptt:active{background:rgba(239,68,68,.3)}
+
+/* TABBAR — row 6 */
+.tabbar{grid-row:6;display:flex;background:rgba(0,0,0,.8);backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);padding-bottom:var(--sb);flex-shrink:0}
+.ti{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 4px 5px;cursor:pointer;border:none;background:transparent;transition:opacity .14s;position:relative;min-width:0}
+.ti:active{opacity:.55}
+.ti .tii{font-size:20px;line-height:1.15;transition:transform .15s}
+.ti .til{font-size:9px;font-weight:800;color:var(--text3);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.ti.active .til{color:var(--green)}
+.ti.active .tii{transform:scale(1.1)}
+.ti .tdot{position:absolute;top:5px;right:calc(50% - 18px);width:8px;height:8px;border-radius:50%;background:var(--red);border:1.5px solid rgba(0,0,0,.8);display:none}
+.ti.has-dot .tdot{display:block}
+
+/* MODALS */
 .mov{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.8);align-items:flex-end;justify-content:center;backdrop-filter:blur(8px)}
 .mov.show{display:flex}
 .mbd{position:absolute;inset:0}
-.msheet{position:relative;background:rgba(10,10,10,.98);border-top-left-radius:26px;border-top-right-radius:26px;border:1px solid var(--border2);border-bottom:none;padding:0 18px calc(18px + var(--sb));width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;box-shadow:0 -12px 50px rgba(0,0,0,.7);backdrop-filter:blur(20px)}
+.msheet{position:relative;background:rgba(8,8,8,.98);border-top-left-radius:24px;border-top-right-radius:24px;border:1px solid var(--border2);border-bottom:none;padding:0 18px calc(18px + var(--sb));width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;box-shadow:0 -12px 50px rgba(0,0,0,.8);backdrop-filter:blur(20px)}
 .mhandle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:12px auto 16px}
 .mtitle{font-size:16px;font-weight:900;margin-bottom:16px;letter-spacing:-.02em}
 .qr-cw{display:flex;justify-content:center;margin-bottom:14px}
@@ -389,8 +364,6 @@ input,select,textarea{font-family:inherit;color:inherit}
 .egrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .ebtn{aspect-ratio:1;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--border);font-size:24px;display:flex;align-items:center;justify-content:center}
 .ebtn:active{transform:scale(.86)}
-
-/* SOS overlay */
 #sosOv{display:none;position:fixed;inset:0;z-index:10000;background:rgba(220,38,38,.92);align-items:center;justify-content:center;flex-direction:column;gap:16px;backdrop-filter:blur(10px)}
 #sosOv.show{display:flex}
 .sos-card{background:rgba(255,255,255,.97);border-radius:26px;padding:28px 24px;width:calc(100% - 40px);max-width:320px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5)}
@@ -399,30 +372,22 @@ input,select,textarea{font-family:inherit;color:inherit}
 .sos-t{font-size:19px;font-weight:900;color:#c00;margin-bottom:8px}
 .sos-b{font-size:13px;color:#444;line-height:1.6;white-space:pre-wrap}
 .sos-dismiss{padding:12px 28px;border-radius:14px;background:rgba(255,255,255,.2);color:#fff;font-weight:800;font-size:14px;border:2px solid rgba(255,255,255,.4);cursor:pointer}
-
-/* Toast */
 #toastLayer{position:fixed;top:calc(12px + var(--st));left:50%;transform:translateX(-50%);z-index:20000;display:flex;flex-direction:column;gap:7px;width:calc(100% - 28px);max-width:340px;align-items:center;pointer-events:none}
-.toast{background:rgba(12,12,12,.96);border:1px solid var(--border2);color:var(--text);font-size:12.5px;font-weight:700;padding:10px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.6);animation:tIn .2s ease,tOut .3s ease 2.3s forwards;text-align:center;backdrop-filter:blur(12px)}
+.toast{background:rgba(8,8,8,.96);border:1px solid var(--border2);color:var(--text);font-size:12.5px;font-weight:700;padding:10px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.6);animation:tIn .2s ease,tOut .3s ease 2.3s forwards;text-align:center;backdrop-filter:blur(12px)}
 .toast.ok{background:rgba(57,255,20,.12);border-color:rgba(57,255,20,.4);color:var(--green)}
 .toast.err{background:var(--reds);border-color:rgba(239,68,68,.4);color:var(--red)}
-.toast.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.4);color:var(--warn)}
+.toast.warn{background:var(--warns);border-color:rgba(245,158,11,.4);color:var(--warn)}
 @keyframes tIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 @keyframes tOut{to{opacity:0;transform:translateY(-8px)}}
-
-/* Reactions */
 .rb{position:absolute;bottom:0;display:flex;flex-direction:column;align-items:center;animation:fUp 2.4s ease-out forwards}
 .rb .re{font-size:26px}.rb .rw{font-size:9px;color:var(--text3);background:var(--surf2);padding:1px 5px;border-radius:6px;margin-top:1px}
 @keyframes fUp{0%{transform:translateY(0) scale(.5);opacity:0}12%{transform:translateY(-14px) scale(1.05);opacity:1}85%{opacity:1}100%{transform:translateY(-160px) scale(.9);opacity:0}}
 
-/* Leaflet dark custom */
-.leaflet-container{background:#121212}
-.leaflet-tile{filter:brightness(.85) saturate(.7) hue-rotate(0deg)}
-
-/* Desktop */
 @media(min-width:600px){
-  body{display:flex;align-items:center;justify-content:center;background:#050608}
+  body{display:flex;align-items:center;justify-content:center;background:#050508}
   .screen{min-height:auto;max-width:420px;width:100%;border-radius:22px;border:1px solid var(--border2);box-shadow:0 28px 70px rgba(0,0,0,.8);overflow:hidden;margin:20px}
   .screen.active{max-height:92dvh;overflow-y:auto}
+  #roomScreen{position:relative;top:auto;left:auto;right:auto;bottom:auto}
   #roomScreen.active{width:400px;height:91dvh;max-height:900px;border-radius:24px;border:1px solid var(--border2);box-shadow:0 28px 70px rgba(0,0,0,.8);overflow:hidden}
 }
 @media(min-width:900px){#roomScreen.active{width:440px;height:93dvh}}
@@ -431,44 +396,47 @@ input,select,textarea{font-family:inherit;color:inherit}
 <body>
 <div id="toastLayer"></div>
 
-<!-- ── JOIN ─────────────────────────────────────────── -->
+<!-- JOIN -->
 <div id="joinScreen" class="screen">
   <div class="join-wrap">
     <div class="j-logo">📻</div>
     <div class="j-title">Bộ Đàm Web</div>
-    <div class="j-sub">Walkie-talkie nhóm · mọi thiết bị</div>
-    <div class="j-card">
+    <div class="j-sub">Walkie-talkie nhóm — mọi thiết bị</div>
+    <div class="j-card" style="max-width:380px;width:100%">
       <h3>🚪 Vào phòng</h3>
-      <div class="fg"><label class="lbl">Mã phòng</label><input type="text" id="roomCodeInput" class="inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Nhập mã phòng..."/><div style="font-size:11px;color:var(--text3);margin-top:4px">Phân biệt hoa/thường · 3-20 ký tự</div></div>
+      <div class="fg"><label class="lbl">Mã phòng</label><input type="text" id="roomCodeInput" class="inp" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Nhập mã phòng..."/><div class="hint">Phân biệt hoa/thường · 3-20 ký tự</div></div>
       <div class="fg"><label class="lbl">Tên của bạn</label><input type="text" id="usernameInput" class="inp" autocomplete="off" autocapitalize="words" placeholder="Tên thật..."/></div>
-      <div class="fg" id="passGroup" style="display:none"><label class="lbl">🔒 Mật khẩu</label><input type="password" id="roomPass" class="inp" placeholder="Nhập mật khẩu..."/></div>
-      <button id="joinBtn" class="btn btn-g btn-full btn-lg" style="margin-top:4px;border-radius:14px">Vào phòng</button>
+      <div class="fg" id="passGroup" style="display:none"><label class="lbl">🔒 Mật khẩu phòng</label><input type="password" id="roomPass" class="inp" placeholder="Nhập mật khẩu..."/></div>
+      <button id="joinBtn" class="btn btn-g btn-full btn-lg" style="margin-top:2px">Vào phòng</button>
       <div id="joinErr" class="j-err"></div>
     </div>
     <div class="jdiv" style="max-width:380px;width:100%">hoặc tạo phòng mới</div>
     <div class="cr-card" style="max-width:380px;width:100%">
       <button class="cr-hdr" id="crToggle"><span>➕</span><span style="flex:1;text-align:left">Tạo phòng mới</span><span class="arr">▼</span></button>
       <div class="cr-body" id="crBody">
-        <div class="fg"><label class="lbl">Mã phòng mới</label><input type="text" id="newCode" class="inp" autocomplete="off" autocapitalize="off" placeholder="Vd: NhomPhuot2026"/></div>
+        <div class="fg"><label class="lbl">Mã phòng mới</label><input type="text" id="newCode" class="inp" autocomplete="off" autocapitalize="off" placeholder="Vd: NhomBanThan"/></div>
         <div class="fg"><label class="lbl">Tên của bạn</label><input type="text" id="newName" class="inp" autocomplete="off" autocapitalize="words" placeholder="Tên thật..."/></div>
         <div class="fg"><label class="lbl">Mật khẩu (tuỳ chọn)</label><input type="password" id="newPass" class="inp" placeholder="Để trống nếu không cần"/></div>
-        <div class="fg"><label class="lbl">Mô tả</label><input type="text" id="newDesc" class="inp" placeholder="Vd: Nhóm phượt Hà Giang..." maxlength="80"/></div>
-        <div class="trow"><div><div class="tl">Phòng công khai</div><div class="ts">Hiện trong danh sách</div></div><button class="tog on" id="newPublic"></button></div>
-        <div class="trow"><div><div class="tl">Duyệt thành viên</div><div class="ts">Chủ phòng phê duyệt</div></div><button class="tog" id="newApproval"></button></div>
-        <button id="crBtn" class="btn btn-g btn-full" style="border-radius:12px">🏠 Tạo và vào phòng</button>
+        <div class="fg"><label class="lbl">Mô tả phòng</label><input type="text" id="newDesc" class="inp" placeholder="Vd: Nhóm phượt miền Trung..." maxlength="80"/></div>
+        <div class="trow"><div><div class="tl">Phòng công khai</div><div class="ts">Hiện trong danh sách khám phá</div></div><button class="tog on" id="newPublic"></button></div>
+        <div class="trow"><div><div class="tl">Duyệt thành viên</div><div class="ts">Chủ phòng phải duyệt từng người</div></div><button class="tog" id="newApproval"></button></div>
+        <button id="crBtn" class="btn btn-g btn-full">🏠 Tạo và vào phòng</button>
       </div>
     </div>
-    <div style="width:100%;max-width:380px"><button id="discoverBtn" class="btn btn-s btn-full" style="border-radius:12px">🔍 Khám phá phòng đang hoạt động</button></div>
+    <div style="width:100%;max-width:380px"><button id="discoverBtn" class="btn btn-s btn-full">🔍 Khám phá phòng đang hoạt động</button></div>
   </div>
 </div>
 
-<!-- ── DISCOVER ──────────────────────────────────────── -->
+<!-- DISCOVER -->
 <div id="discoverScreen" class="screen">
   <div class="topbar"><button class="ib" id="dBack">←</button><h2>🔍 Khám phá phòng</h2><button class="ib" id="dRefresh">↻</button></div>
-  <div class="page"><div class="sw" style="margin-top:4px"><span class="si">🔍</span><input type="text" class="inp" id="dSearch" placeholder="Tìm theo tên phòng..." style="padding-left:32px"/></div><div id="roomListEl"></div></div>
+  <div class="page">
+    <div class="sw" style="margin-top:4px"><span class="si">🔍</span><input type="text" class="inp sw" id="dSearch" placeholder="Tìm theo tên phòng..."/></div>
+    <div id="roomListEl"></div>
+  </div>
 </div>
 
-<!-- ── WAITING ───────────────────────────────────────── -->
+<!-- WAITING -->
 <div id="waitScreen" class="screen">
   <div class="wi">⏳</div>
   <div class="wt">Đang chờ duyệt...</div>
@@ -476,198 +444,252 @@ input,select,textarea{font-family:inherit;color:inherit}
   <button class="btn btn-s" id="waitCancel">Huỷ yêu cầu</button>
 </div>
 
-<!-- ── ROOM ──────────────────────────────────────────── -->
+<!-- ROOM -->
 <div id="roomScreen">
 
-  <!-- MAP full screen -->
-  <div id="mapFull"></div>
-  <div class="map-vignette"></div>
-
-  <!-- TOP HEADER -->
+  <!-- Row 1: Header -->
   <div class="rhdr">
-    <div class="rhdr-left">
-      <div class="rname" id="roomLabel">--</div>
-      <div class="rsub">
-        <span class="rdot" id="connDot"></span>
-        <span id="memberCountLbl">0 thành viên</span>
-        <span style="color:var(--text4)">·</span>
-        <span id="signalLbl" style="display:none">📶 <span id="signalTxt"></span></span>
+    <div class="rchip" id="shareChip">
+      <span class="rd" id="connDot"></span>
+      <span id="roomLabel">--</span>
+      <span style="font-size:11px;color:var(--text3)">📤</span>
+    </div>
+    <!-- Status button + dropdown -->
+    <div style="position:relative;flex-shrink:0" id="statusWrap">
+      <button id="statusBtn" style="display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:999px;background:var(--surf2);border:1px solid var(--border);font-size:13px;cursor:pointer" title="Đổi trạng thái">🟢 <span id="statusLabel" style="font-size:10px;color:var(--green)">Online</span> <span style="font-size:9px;color:var(--text3)">▾</span></button>
+      <div id="statusDrop" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:200;min-width:180px;overflow:hidden">
+        <div style="padding:8px 12px 6px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Trạng thái</div>
+        <button class="status-opt" data-s="online"  style="width:100%;padding:10px 14px;text-align:left;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;border:none;background:transparent;color:var(--text);border-bottom:1px solid var(--border);cursor:pointer"><span>🟢</span><div><div>Online</div><div style="font-size:10px;color:var(--text3);font-weight:400">TTS đọc tin nhắn bình thường</div></div></button>
+        <button class="status-opt" data-s="away"    style="width:100%;padding:10px 14px;text-align:left;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;border:none;background:transparent;color:var(--text);border-bottom:1px solid var(--border);cursor:pointer"><span>🟡</span><div><div>Xa máy</div><div style="font-size:10px;color:var(--text3);font-weight:400">TTS tóm tắt khi quay lại</div></div></button>
+        <button class="status-opt" data-s="busy"    style="width:100%;padding:10px 14px;text-align:left;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;border:none;background:transparent;color:var(--text);border-bottom:1px solid var(--border);cursor:pointer"><span>🔴</span><div><div>Bận</div><div style="font-size:10px;color:var(--text3);font-weight:400">Tắt TTS hoàn toàn</div></div></button>
+        <button class="status-opt" data-s="offline" style="width:100%;padding:10px 14px;text-align:left;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;border:none;background:transparent;color:var(--text);cursor:pointer"><span>⚫</span><div><div>Offline</div><div style="font-size:10px;color:var(--text3);font-weight:400">Không đọc & không nhận thông báo</div></div></button>
       </div>
     </div>
-    <div class="rhdr-right">
-      <div id="statusWrap">
-        <button id="statusBtn">🟢 <span id="statusLabel" style="font-size:11px">Online</span> ▾</button>
-        <div id="statusDrop">
-          <div class="sdrop-title">Trạng thái của bạn</div>
-          <button class="sopt active-s" data-s="online"><span class="sopt-ico">🟢</span><div class="sopt-info"><div class="sopt-lbl">Online</div><div class="sopt-sub">Đọc tin nhắn bình thường</div></div></button>
-          <button class="sopt" data-s="away"><span class="sopt-ico">🟡</span><div class="sopt-info"><div class="sopt-lbl">Xa máy</div><div class="sopt-sub">Tóm tắt khi quay lại</div></div></button>
-          <button class="sopt" data-s="busy"><span class="sopt-ico">🔴</span><div class="sopt-info"><div class="sopt-lbl">Bận</div><div class="sopt-sub">Tắt TTS hoàn toàn</div></div></button>
-          <button class="sopt" data-s="offline"><span class="sopt-ico">⚫</span><div class="sopt-info"><div class="sopt-lbl">Offline</div><div class="sopt-sub">Không đọc, không thông báo</div></div></button>
+    <div class="racts">
+      <div class="ra-wrap" id="waTTS"><div class="ra on" id="raTTS">🔊</div><span class="ra-lbl" id="raTTSlbl">Đọc chat</span></div>
+      <div class="ra-wrap" id="waCam"><div class="ra">📷</div><span class="ra-lbl">Camera</span></div>
+      <div class="ra-wrap" id="waWake"><div class="ra">🔆</div><span class="ra-lbl">Sáng màn</span></div>
+      <div class="ra-wrap" id="waNoti"><div class="ra">🔔</div><span class="ra-lbl">Thông báo</span></div>
+      <div class="ra-wrap" id="waLeave" style="cursor:pointer"><div class="ra" style="background:var(--reds);border-color:rgba(248,81,73,.3)">🚪</div><span class="ra-lbl" style="color:var(--red)">Rời phòng</span></div>
+    </div>
+  </div>
+
+  <!-- Row 2: Banners -->
+  <div class="banners">
+    <div class="ban ban-recon" id="recon">⚡ Đang kết nối lại...</div>
+    <div class="ban ban-ios" id="iosB"><span class="bx" id="iosBX">✕</span>📲 Safari → <b>Thêm vào màn hình chính</b> để nhận thông báo.</div>
+    <div class="vmemo" id="vmemo"><div class="vmemo-row"><button class="vmemo-btn" id="vmemoPlay">▶ Phát lại</button><div class="vmemo-info" id="vmemoInfo">Tin nhắn thoại</div><button class="vmemo-x" id="vmemoX">✕</button></div></div>
+    <div class="aprv-ban" id="aprvBan"><div class="aprv-ban-title">⏳ Đang chờ duyệt vào phòng</div><div id="aprvBanList"></div></div>
+    <!-- NEW: cam request banner -->
+    <div class="req-ban req-cam" id="camReqBan">
+      <div class="req-inner">
+        <div class="req-icon">📷</div>
+        <div class="req-body"><div class="req-title">Yêu cầu bật camera</div><div class="req-sub" id="camReqSub">Chủ phòng yêu cầu bạn bật camera</div></div>
+        <div class="req-btns">
+          <button class="btn btn-b btn-sm" id="camAccept">Bật</button>
+          <button class="btn btn-s btn-sm" id="camDecline">Bỏ qua</button>
         </div>
       </div>
-      <button class="rha" id="waTTS" title="Đọc chat">🔊</button>
-      <button class="rha" id="waNoti" title="Thông báo">🔔</button>
-      <button class="rha" id="waLeave" style="color:var(--red)" title="Rời phòng">🚪</button>
+    </div>
+    <!-- NEW: mic request banner -->
+    <div class="req-ban req-mic" id="micReqBan">
+      <div class="req-inner">
+        <div class="req-icon">🎙️</div>
+        <div class="req-body"><div class="req-title">Yêu cầu bật micro</div><div class="req-sub" id="micReqSub">Chủ phòng yêu cầu bạn nói ngay</div></div>
+        <div class="req-btns">
+          <button class="btn btn-g btn-sm" id="micAccept">Bật mic</button>
+          <button class="btn btn-s btn-sm" id="micDecline">Bỏ qua</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Map controls -->
-  <div class="map-ctrl" id="mapCtrlWrap" style="top:calc(68px + var(--st))">
-    <button class="mc-btn" id="mcLocate">📍</button>
-    <button class="mc-btn" id="mcFit">👥</button>
-    <button class="mc-btn" id="mcWake">🔆</button>
-  </div>
+  <!-- Row 3: Avatar strip -->
+  <div class="av-strip" id="avStrip"></div>
 
-  <!-- Banners (below header) -->
-  <div class="banners" style="top:calc(58px + var(--st))">
-    <div class="ban ban-recon" id="recon">⚡ Đang kết nối lại...</div>
-    <div class="ban ban-ios" id="iosB"><span class="bx" id="iosBX">✕</span>📲 Safari → <b>Thêm vào màn hình chính</b></div>
-    <div class="vmemo" id="vmemo"><div class="vmemo-row"><button class="vmemo-btn" id="vmemoPlay">▶ Phát lại</button><div class="vmemo-info" id="vmemoInfo">Tin nhắn thoại</div><button class="vmemo-x" id="vmemoX">✕</button></div></div>
-    <div class="req-ban req-cam" id="camReqBan"><div class="req-inner"><div class="req-icon">📷</div><div class="req-body"><div class="req-title">Yêu cầu bật camera</div><div class="req-sub" id="camReqSub">Chủ phòng yêu cầu</div></div><div class="req-btns"><button class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff" id="camAccept">Bật</button><button class="btn btn-sm" style="background:rgba(0,0,0,.2);color:rgba(255,255,255,.7)" id="camDecline">Bỏ</button></div></div></div>
-    <div class="req-ban req-mic" id="micReqBan"><div class="req-inner"><div class="req-icon">🎙️</div><div class="req-body"><div class="req-title">Yêu cầu bật micro</div><div class="req-sub" id="micReqSub">Chủ phòng yêu cầu</div></div><div class="req-btns"><button class="btn btn-sm" style="background:rgba(0,0,0,.2);color:#fff" id="micAccept">Bật</button><button class="btn btn-sm" style="background:rgba(0,0,0,.15);color:rgba(255,255,255,.7)" id="micDecline">Bỏ</button></div></div></div>
-  </div>
-
-  <!-- BOTTOM SHEET -->
-  <div class="bottom-sheet" id="bottomSheet">
-    <div class="bs-handle-wrap" id="bsHandle"><div class="bs-handle"></div></div>
-
-    <!-- Video grid -->
+  <!-- Row 4: Content panels -->
+  <div class="content">
     <div id="videoGrid"></div>
 
-    <!-- Member strip (always visible in sheet) -->
-    <div id="memberStripView">
-      <div class="bs-members-hdr">
-        <span class="bs-members-title">Thành viên</span>
-        <span class="bs-members-count" id="memberCountBadge">0 online</span>
-      </div>
-      <div class="av-strip" id="avStrip"></div>
-    </div>
-
-    <!-- Content panels (overlay full sheet) -->
-    <!-- MEMBER LIST panel -->
-    <div class="content-panel" id="panelMembers">
-      <div class="cp-hdr">
-        <span style="font-size:20px">👥</span>
-        <span class="cp-title">Thành viên</span>
-        <button class="cp-close" id="membersClose">✕</button>
-      </div>
-      <div class="mlist" id="memberListEl"></div>
-    </div>
-
-    <!-- CHAT panel -->
-    <div class="content-panel" id="panelChat">
-      <div class="cp-hdr">
-        <span style="font-size:20px">💬</span>
-        <span class="cp-title">Chat nhóm</span>
-        <button class="cp-close" id="chatClose">✕</button>
-      </div>
+    <!-- CHAT (default) -->
+    <div class="panel active" id="panelChat">
       <div class="chat-msgs" id="chatMsgs"></div>
-      <div class="chat-input-row">
-        <button class="cemoji" id="emojiFab">🙂</button>
-        <input type="text" class="chat-inp" id="chatInput" placeholder="Nhắn tin nhanh..." maxlength="300" autocomplete="off"/>
-        <button class="csend" id="chatSend">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div style="display:flex;gap:7px;padding:8px 12px 9px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;align-items:center">
+        <!-- Emoji button: icon mặt cười rõ ràng -->
+        <button id="emojiFab" title="Gửi cảm xúc" style="width:40px;height:40px;border-radius:12px;background:var(--surf2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .13s">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="#8b949e" stroke-width="1.8"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="#8b949e" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="9" cy="10" r="1.2" fill="#8b949e"/>
+            <circle cx="15" cy="10" r="1.2" fill="#8b949e"/>
+          </svg>
+        </button>
+        <input type="text" class="inp" id="chatInput" placeholder="Nhắn tin nhanh..." maxlength="300" autocomplete="off" style="flex:1;padding:9px 13px;border-radius:20px;background:var(--surf2)"/>
+        <!-- Send button: icon mũi tên gửi rõ ràng -->
+        <button id="chatSend" title="Gửi tin nhắn" style="width:44px;height:44px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 12px rgba(88,166,255,.35);transition:all .13s">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
       </div>
     </div>
 
-    <!-- SETTINGS panel -->
-    <div class="content-panel" id="panelSettings">
-      <div class="cp-hdr">
-        <span style="font-size:20px">⚙️</span>
-        <span class="cp-title">Cài đặt</span>
-        <button class="cp-close" id="settingsClose">✕</button>
+    <!-- MEMBERS -->
+    <div class="panel" id="panelMembers">
+      <div class="mlist" id="memberListEl"></div>
+    </div>
+
+    <!-- MAP -->
+    <div class="panel" id="panelMap">
+      <div class="map-panel-wrap">
+        <div id="mapFull"></div>
+        <div class="mfe" id="mapFullEmpty" style="display:none">📍 Chưa có ai chia sẻ vị trí</div>
       </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panelSettings">
       <div class="set-scroll">
-        <div id="setAprvSec" style="display:none"><div class="sec">⏳ Chờ duyệt vào</div><div id="setAprvItems"></div></div>
+        <div id="setAprvSec" style="display:none">
+          <div class="sec" style="margin-bottom:8px">⏳ Đang chờ duyệt</div>
+          <div id="setAprvItems"></div>
+        </div>
         <div id="ownerBlock" style="display:none">
-          <div class="sec">Phòng & quyền</div>
-          <div class="set-section" style="margin-bottom:10px">
-            <div class="set-item"><div class="set-icon">🌐</div><div class="set-body"><div class="set-label">Phòng công khai</div><div class="set-sub">Hiện trong danh sách khám phá</div></div><div class="set-ctrl"><button class="tog on" id="setPublic"></button></div></div>
-            <div class="set-item"><div class="set-icon">✅</div><div class="set-body"><div class="set-label">Duyệt thành viên</div><div class="set-sub">Phải được chủ phòng phê duyệt</div></div><div class="set-ctrl"><button class="tog" id="setApproval"></button></div></div>
+          <div class="sec">Phòng & quyền truy cập</div>
+          <div class="card" style="margin-bottom:10px">
+            <div class="card-row"><div class="card-icon">🌐</div><div class="card-body"><div class="card-label">Phòng công khai</div><div class="card-sub">Hiện trong danh sách khám phá</div></div><div class="card-ctrl"><button class="tog on" id="setPublic"></button></div></div>
+            <div class="card-row"><div class="card-icon">✅</div><div class="card-body"><div class="card-label">Duyệt thành viên</div><div class="card-sub">Phải được chủ phòng phê duyệt</div></div><div class="card-ctrl"><button class="tog" id="setApproval"></button></div></div>
           </div>
           <div class="sec">Bảo mật</div>
-          <div class="set-section" style="margin-bottom:10px"><div class="set-inp-wrap"><label class="lbl">🔒 Mật khẩu phòng</label><input type="password" class="inp" id="setPass" placeholder="Để trống = không cần mật khẩu"/></div></div>
-          <div class="sec">Thông tin</div>
-          <div class="set-section" style="margin-bottom:10px"><div class="set-inp-wrap"><label class="lbl">Mô tả</label><input type="text" class="inp" id="setDesc" placeholder="Vd: Nhóm phượt miền Trung..." maxlength="80"/></div></div>
-          <button class="btn btn-g btn-full" id="setSave" style="margin-bottom:10px;border-radius:12px">💾 Lưu cài đặt</button>
-          <!-- TTS Admin -->
-          <div id="ttsAdminPanel">
-            <div class="sec">🔊 TTS Provider</div>
-            <div class="set-section" style="margin-bottom:8px"><div id="ttsProviderList"><div style="color:var(--text3);font-size:12px;padding:12px;text-align:center">Đang tải...</div></div></div>
-            <div class="set-section" style="margin-bottom:8px">
-              <div class="set-inp-wrap">
-                <label class="lbl">🔑 FPT.AI API Key (backup)</label>
-                <input type="text" class="inp" id="fptApiKey" placeholder="Dán key từ console.fpt.ai" autocomplete="off" style="margin-bottom:6px"/>
-                <div style="display:flex;gap:6px"><select class="inp" id="fptVoice" style="flex:1"><option value="banmai">Ban Mai — Nữ Bắc ⭐</option><option value="leminh">Lê Minh — Nam Bắc</option><option value="myan">Mỹ An — Nữ Trung</option><option value="linhsan">Linh San — Nữ Nam</option><option value="minhquang">Minh Quang — Nam Nam</option></select><button class="btn btn-s btn-sm" id="saveFptKey">💾</button></div>
-              </div>
-            </div>
-            <button class="btn btn-s btn-full" id="refreshTtsBtn" style="margin-bottom:8px;border-radius:12px">🔄 Refresh TTS</button>
+          <div class="card" style="margin-bottom:10px">
+            <div class="set-inp-wrap"><label class="lbl">🔒 Mật khẩu phòng</label><input type="password" class="inp" id="setPass" placeholder="Để trống = không cần mật khẩu"/><div class="hint">Đặt mới hoặc xoá để bỏ mật khẩu</div></div>
           </div>
+          <div class="sec">Thông tin phòng</div>
+          <div class="card" style="margin-bottom:10px">
+            <div class="set-inp-wrap"><label class="lbl">Mô tả</label><input type="text" class="inp" id="setDesc" placeholder="Vd: Nhóm phượt miền Trung..." maxlength="80"/></div>
+          </div>
+          <button class="btn btn-g btn-full" id="setSave" style="margin-bottom:8px">💾 Lưu cài đặt</button>
         </div>
         <div class="sec">Tuỳ chọn</div>
-        <div class="set-section" style="margin-bottom:10px">
-          <div class="set-item" id="rdOpenRow" style="cursor:pointer"><div class="set-icon">🔍</div><div class="set-body"><div class="set-label">Khám phá phòng khác</div></div><span style="color:var(--text3)">›</span></div>
-          <div class="set-item" id="sosRow" style="cursor:pointer"><div class="set-icon">🆘</div><div class="set-body"><div class="set-label">Gửi SOS khẩn cấp</div></div><span style="color:var(--red)">›</span></div>
+        <div class="card" style="margin-bottom:10px">
+          <div class="card-row" style="cursor:pointer" id="settingsTTSRow">
+          <div class="card-icon">🔊</div>
+          <div class="card-body"><div class="card-label">Đọc tin nhắn chat</div><div class="card-sub">Tự động đọc to tin nhắn người khác gửi</div></div>
+          <div class="card-ctrl"><button class="tog on" id="setTTS"></button></div>
         </div>
-        <button class="btn btn-r btn-full btn-lg" id="setLeave" style="border-radius:14px">🚪 Rời phòng</button>
-      </div>
-    </div>
+        <div class="card-row" id="rdOpenRow" style="cursor:pointer"><div class="card-icon">🔍</div><div class="card-body"><div class="card-label">Khám phá phòng khác</div><div class="card-sub">Tìm và chuyển sang phòng khác</div></div><span style="color:var(--text3)">›</span></div>
+          <div class="card-row" id="sosRow" style="cursor:pointer"><div class="card-icon">🆘</div><div class="card-body"><div class="card-label">Gửi SOS khẩn cấp</div><div class="card-sub">Báo động toàn phòng + vị trí GPS</div></div><span style="color:var(--red)">›</span></div>
+        </div>
+        <button class="btn btn-r btn-full btn-lg" id="setLeave">🚪 Rời phòng</button>
 
-    <!-- PTT ZONE — TrailTalk orange style -->
-    <div class="ptt-zone">
-      <div id="reactLayer"></div>
-      <!-- Left: Mute -->
-      <div class="ptt-side">
-        <button class="ptt-side-btn" id="waCam" title="Camera">📷</button>
-        <span class="ptt-side-lbl">Camera</span>
-      </div>
-      <!-- Center: stat + big PTT -->
-      <div class="ptt-center">
-        <div class="stat-line" id="statLine">Phòng đang trống</div>
-        <div class="ptt-outer" id="pttOuter">
-          <div class="ptt-wave-r" id="pttWaveR"></div>
-          <button id="pttBtn" class="locked">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-            <span class="ptt-txt">NHẤN ĐỂ<br>NÓI</span>
-          </button>
+        <!-- TTS Admin Panel (owner only) -->
+        <div id="ttsAdminPanel" style="display:none;margin-top:12px">
+          <div class="sec">🔊 Quản lý TTS Provider</div>
+          <div class="card" style="margin-bottom:8px">
+            <div id="ttsProviderList" style="padding:8px 12px">
+              <div style="color:var(--text3);font-size:12px;text-align:center;padding:12px">Đang tải...</div>
+            </div>
+          </div>
+          <!-- Thêm FPT.AI key -->
+          <div class="card" style="margin-bottom:8px">
+            <div class="set-inp-wrap">
+              <label class="lbl">🔑 FPT.AI API Key</label>
+              <input type="text" class="inp" id="fptApiKey" placeholder="Dán API key từ console.fpt.ai" autocomplete="off"/>
+              <div style="margin-top:6px;display:flex;gap:6px">
+                <select class="inp" id="fptVoice" style="flex:1">
+                  <option value="banmai">Ban Mai (Nữ miền Bắc) ⭐</option>
+                  <option value="leminh">Lê Minh (Nam miền Bắc)</option>
+                  <option value="myan">Mỹ An (Nữ miền Trung)</option>
+                  <option value="giahuy">Gia Huy (Nam miền Trung)</option>
+                  <option value="linhsan">Linh San (Nữ miền Nam)</option>
+                  <option value="minhquang">Minh Quang (Nam miền Nam)</option>
+                </select>
+                <button class="btn btn-b btn-sm" id="saveFptKey">💾 Lưu</button>
+              </div>
+              <div class="hint">Đăng ký miễn phí tại console.fpt.ai → APIs → Text to Speech → API Keys</div>
+            </div>
+          </div>
+          <button class="btn btn-s btn-full" id="refreshTtsBtn">🔄 Refresh trạng thái providers</button>
+        </div>
+
+        <!-- TTS Voice Picker -->
+        <div style="margin-top:10px">
+          <div class="sec">🔊 Cài đặt giọng đọc chat</div>
+          <div class="card">
+            <div class="set-inp-wrap">
+              <label class="lbl">Chọn giọng nói</label>
+              <select id="ttsVoiceSel" class="inp" style="cursor:pointer;margin-bottom:8px">
+                <option value="nu-nam">🎀 Nữ miền Nam — Điềm My</option>
+                <option value="nu-bac">🎀 Nữ miền Bắc — Thanh</option>
+                <option value="nam-nam">🎙️ Nam miền Nam — Minh Quang</option>
+                <option value="nam-bac">🎙️ Nam miền Bắc — Thanh Long</option>
+              </select>
+              <!-- Nút áp giọng cho toàn phòng — chỉ admin thấy -->
+              <button id="setVoiceForRoom" class="btn btn-g btn-full" style="display:none;margin-bottom:8px">
+                📢 Áp dụng giọng này cho toàn phòng
+              </button>
+              <div class="hint" style="line-height:1.6">
+                💡 Giọng Việt từ ViettelAI — miễn phí, không cần đăng ký.<br>
+                👑 <b>Admin</b> có thể áp dụng giọng cho tất cả thành viên.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <!-- Right: SOS -->
-      <div class="ptt-side">
-        <button class="sos-btn" id="sosBtnPTT">SOS</button>
-        <span class="ptt-side-lbl" style="color:var(--red)">Khẩn cấp</span>
-      </div>
-    </div>
-
-    <!-- TAB BAR -->
-    <div class="tabbar">
-      <button class="ti active" id="tabMembers"><span class="tii">👥</span><span class="til">Đội nhóm</span><span class="tdot"></span></button>
-      <button class="ti" id="tabChat"><span class="tii">💬</span><span class="til">Chat</span><span class="tdot"></span></button>
-      <button class="ti" id="tabMap"><span class="tii">🗺️</span><span class="til">Bản đồ</span><span class="tdot"></span></button>
-      <button class="ti" id="tabSettings"><span class="tii">⚙️</span><span class="til">Cài đặt</span><span class="tdot"></span></button>
     </div>
   </div>
 
-</div><!-- /roomScreen -->
+  <!-- Row 5: PTT Zone -->
+  <div class="ptt-zone">
+    <div id="reactLayer"></div>
+    <div class="stat-line" id="statLine">Phòng đang trống</div>
+    <div class="ptt-row">
+      <!-- center: PTT only -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div class="ptt-outer">
+          <div class="ptt-ring" id="pttRing"></div>
+          <button id="pttBtn" class="locked">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" stroke="currentColor" stroke-width="2"/>
+              <path d="M19 11a7 7 0 0 1-14 0M12 18v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          <span class="ptt-txt" id="pttLabel">NHẤN ĐỂ<br>NÓI</span></button>
+        </div>
+        <div class="ptt-label" id="pttLabel">PUSH TO TALK</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 6: Tab bar -->
+  <div class="tabbar">
+    <button class="ti" id="tabMap" data-p="panelMap">
+      <span class="tii">🗺️</span><span class="til">Bản đồ</span><span class="tdot"></span>
+    </button>
+    <button class="ti active" id="tabChat" data-p="panelChat">
+      <span class="tii">💬</span><span class="til">Chat</span><span class="tdot"></span>
+    </button>
+    <button class="ti" id="tabMembers" data-p="panelMembers">
+      <span class="tii">👥</span><span class="til">Thành viên</span><span class="tdot"></span>
+    </button>
+    <button class="ti" id="tabSettings" data-p="panelSettings">
+      <span class="tii">⚙️</span><span class="til">Cài đặt</span><span class="tdot"></span>
+    </button>
+  </div>
+</div>
 
 <!-- MODALS -->
-<div class="mov" id="qrMov"><div class="mbd" id="qrBd"></div><div class="msheet"><div class="mhandle"></div><div class="mtitle">📤 Chia sẻ phòng</div><div class="qr-cw"><canvas id="qrCanvas" width="200" height="200"></canvas></div><div class="qr-lr"><div class="qr-lb" id="qrLink"></div><button class="btn btn-s btn-sm" id="qrCopy">Sao chép</button></div><button class="btn btn-s btn-full" id="qrClose" style="margin-top:4px">Đóng</button></div></div>
+<div class="mov" id="qrMov"><div class="mbd" id="qrBd"></div><div class="msheet"><div class="mhandle"></div><div class="mtitle">📤 Chia sẻ phòng</div><div class="qr-cw"><canvas id="qrCanvas" width="200" height="200"></canvas></div><div class="qr-lr"><div class="qr-lb" id="qrLink"></div><button class="btn btn-b btn-sm" id="qrCopy">Sao chép</button></div><button class="btn btn-s btn-full" id="qrClose">Đóng</button></div></div>
 <div class="mov" id="emojiMov"><div class="mbd" id="emojiBd"></div><div class="msheet"><div class="mhandle"></div><div class="mtitle">😄 Gửi cảm xúc</div><div class="egrid" id="emojiGrid"></div><button class="btn btn-s btn-full" style="margin-top:12px" id="emojiClose">Đóng</button></div></div>
-<div class="mov" id="rdMov"><div class="mbd" id="rdBd"></div><div class="msheet"><div class="mhandle"></div><div class="mtitle">🔍 Phòng đang hoạt động</div><div class="sw"><span class="si">🔍</span><input type="text" class="inp" id="rdSearch" placeholder="Tìm phòng..." style="padding-left:32px"/></div><div id="rdList" style="max-height:50dvh;overflow-y:auto"></div><button class="btn btn-s btn-full" style="margin-top:10px" id="rdClose">Đóng</button></div></div>
+<div class="mov" id="rdMov"><div class="mbd" id="rdBd"></div><div class="msheet"><div class="mhandle"></div><div class="mtitle">🔍 Phòng đang hoạt động</div><div class="sw"><span class="si">🔍</span><input type="text" class="inp sw" id="rdSearch" placeholder="Tìm phòng..."/></div><div id="rdList" style="max-height:52dvh;overflow-y:auto"></div><button class="btn btn-s btn-full" style="margin-top:10px" id="rdClose">Đóng</button></div></div>
 <div id="sosOv"><div class="sos-card"><div class="sos-e">🆘</div><div class="sos-t" id="sosTitle">SOS!</div><div class="sos-b" id="sosBody">Thành viên cần hỗ trợ.</div></div><button class="sos-dismiss" id="sosDismiss">✓ Đã biết, đóng lại</button></div>
-<div class="owb-drop" id="owDrop"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-// ── V11 TRAILTAK UI OVERRIDES ─────────────────────────
-const SRV='';
-
 const SRV='https://pushtotalk-anqr.onrender.com';
-const CHUNK=350,VFPS=5,VW=160,VH=120,SK='bdv1100';
+const CHUNK=350,VFPS=5,VW=160,VH=120,SK='bdv1105';
 const EMOJIS=['😂','🤣','😭','😢','😡','😠','😱','😍','🥳','😴','🤔','👍','👎','❤️','🔥','💯','🎉','😅','🙄','🤯'];
 const $=id=>document.getElementById(id);
 
@@ -1805,170 +1827,6 @@ function doLeave(){
   showScreen('join');resetJoinBtn();
   pttBtn.classList.add('locked');
 }
-
-
-// ── Bottom sheet drag & height ─────────────────────────
-const bottomSheet=document.getElementById('bottomSheet');
-const memberStripView=document.getElementById('memberStripView');
-const BS_MIN=170, BS_MID=280, BS_FULL='72vh';
-
-function setBSH(h){
-  bottomSheet.style.height=typeof h==='number'?h+'px':h;
-  // Resize map
-  setTimeout(()=>{try{leafletFull?.invalidateSize();}catch(e){}},50);
-}
-setBSH(BS_MID);
-
-// Drag handle
-let dragY0=null,dragH0=null;
-const bsH=document.getElementById('bsHandle');
-if(bsH){
-  bsH.addEventListener('touchstart',e=>{dragY0=e.touches[0].clientY;dragH0=bottomSheet.offsetHeight;},{passive:true});
-  bsH.addEventListener('touchmove',e=>{
-    const dy=dragY0-e.touches[0].clientY;
-    const nh=Math.max(BS_MIN,Math.min(window.innerHeight*.85,dragH0+dy));
-    bottomSheet.style.height=nh+'px';
-  },{passive:true});
-  bsH.addEventListener('touchend',()=>{
-    const h=bottomSheet.offsetHeight;
-    if(h<BS_MIN+60)setBSH(BS_MIN);
-    else if(h>window.innerHeight*.5)setBSH(BS_FULL);
-    else setBSH(BS_MID);
-  });
-}
-
-// ── Tab switching ──────────────────────────────────────
-const panelMembers2=document.getElementById('panelMembers');
-const panelChat2=document.getElementById('panelChat');
-const panelSettings2=document.getElementById('panelSettings');
-const allPanels=[panelMembers2,panelChat2,panelSettings2].filter(Boolean);
-const allTabs=[tabMembers,tabChat,tabMap,tabSettings].filter(Boolean);
-let activeTabV11='members';
-
-function closeAllPanels(){
-  allPanels.forEach(p=>{p.classList.remove('active');});
-  allTabs.forEach(t=>t.classList.remove('active'));
-}
-
-function openPanel(panelId,tabEl){
-  closeAllPanels();
-  if(tabEl)tabEl.classList.add('active');
-  if(panelId){
-    const p=document.getElementById(panelId);
-    if(p)p.classList.add('active');
-    setBSH(BS_FULL);
-    activeTabV11=panelId;
-  } else {
-    // Map tab — collapse sheet, show full map
-    setBSH(BS_MIN);
-    activeTabV11='map';
-    if(tabEl)tabEl.classList.add('active');
-  }
-}
-
-// Tab listeners
-tabMembers?.addEventListener('click',()=>openPanel('panelMembers',tabMembers));
-tabChat?.addEventListener('click',()=>{openPanel('panelChat',tabChat);setTimeout(()=>chatMsgs?.scrollTo(0,chatMsgs?.scrollHeight),80);});
-tabMap?.addEventListener('click',()=>openPanel(null,tabMap));
-tabSettings?.addEventListener('click',()=>openPanel('panelSettings',tabSettings));
-
-// Close buttons
-document.getElementById('membersClose')?.addEventListener('click',()=>openPanel(null,tabMap));
-document.getElementById('chatClose')?.addEventListener('click',()=>openPanel(null,tabMap));
-document.getElementById('settingsClose')?.addEventListener('click',()=>openPanel(null,tabMap));
-
-// Override switchPanel used by socket events
-window.switchPanel=function(panelId,tabEl){
-  if(panelId==='panelChat')openPanel('panelChat',tabChat);
-  else if(panelId==='panelMembers')openPanel('panelMembers',tabMembers);
-  else if(panelId==='panelSettings')openPanel('panelSettings',tabSettings);
-  else openPanel(null,tabMap);
-};
-
-// ── Status dropdown ────────────────────────────────────
-const statusBtn2=document.getElementById('statusBtn');
-const statusDrop2=document.getElementById('statusDrop');
-if(statusBtn2&&statusDrop2){
-  statusBtn2.addEventListener('click',e=>{
-    e.stopPropagation();
-    const r=statusBtn2.getBoundingClientRect();
-    statusDrop2.style.top=(r.bottom+8)+'px';
-    statusDrop2.classList.toggle('open');
-  });
-  document.addEventListener('click',()=>statusDrop2?.classList.remove('open'));
-  document.querySelectorAll('.sopt').forEach(btn=>{
-    btn.addEventListener('click',e=>{
-      e.stopPropagation();
-      if(typeof setUserStatus==='function')setUserStatus(btn.dataset.s);
-      statusDrop2.classList.remove('open');
-    });
-  });
-}
-
-// ── Map controls ───────────────────────────────────────
-document.getElementById('mcLocate')?.addEventListener('click',()=>{
-  if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{
-    try{leafletFull?.setView([p.coords.latitude,p.coords.longitude],16);}catch(e){}
-  });
-});
-document.getElementById('mcFit')?.addEventListener('click',()=>{
-  try{if(typeof fitMapToAll==='function')fitMapToAll();}catch(e){}
-});
-document.getElementById('mcWake')?.addEventListener('click',()=>{
-  document.getElementById('waWake')?.click();
-});
-
-// ── Leave button in header ─────────────────────────────
-document.getElementById('waLeave')?.addEventListener('click',()=>{
-  document.getElementById('setLeave')?.click();
-});
-
-// ── SOS inline button ──────────────────────────────────
-document.getElementById('sosBtnPTT')?.addEventListener('click',()=>{
-  document.getElementById('sosRow')?.click();
-});
-
-// ── TTS button in header ───────────────────────────────
-const waTTSBtn=document.getElementById('waTTS');
-if(waTTSBtn){
-  waTTSBtn.addEventListener('click',()=>{
-    if(typeof ttsEnabled!=='undefined'){
-      ttsEnabled=!ttsEnabled;
-      waTTSBtn.classList.toggle('on',ttsEnabled);
-      waTTSBtn.title=ttsEnabled?'Tắt đọc chat':'Bật đọc chat';
-      if(typeof toast==='function')toast(ttsEnabled?'🔊 Đọc chat bật':'🔇 Đọc chat tắt','ok');
-    }
-  });
-}
-
-// ── Noti button ────────────────────────────────────────
-document.getElementById('waNoti')?.addEventListener('click',()=>{
-  document.getElementById('waNoti_old')?.click()||
-  (typeof registerPush==='function'&&registerPush());
-});
-
-// ── Update member count in header & badge ─────────────
-function updateMemberUI(){
-  const n=typeof participants!=='undefined'?participants.length:0;
-  const lbl=document.getElementById('memberCountLbl');
-  const badge=document.getElementById('memberCountBadge');
-  if(lbl)lbl.textContent=`${n} thành viên`;
-  if(badge)badge.textContent=`${n} online`;
-}
-
-// Hook renderMembers
-const _rm0=typeof renderMembers==='function'?renderMembers:null;
-if(_rm0){window.renderMembers=function(){_rm0();updateMemberUI();};}
-
-// pttOuter talking class
-const pttOuter2=document.getElementById('pttOuter');
-const origST=window.startTalking,origSp=window.stopTalking;
-if(origST){window.startTalking=function(){pttOuter2?.classList.add('talking');origST.call(this);};}
-if(origSp){window.stopTalking=function(){pttOuter2?.classList.remove('talking');origSp.call(this);};}
-
-// Init: start with map tab (collapsed sheet)
-openPanel(null,tabMap);
-setTimeout(()=>{try{leafletFull?.invalidateSize();}catch(e){}},500);
 </script>
 </body>
 </html>
