@@ -310,7 +310,7 @@ input,select,textarea{font-family:inherit;color:inherit}
 .ptt-zone{
   flex-shrink:0;border-top:1px solid var(--border);padding:14px 20px calc(12px + var(--sb));
   display:flex;align-items:center;justify-content:space-between;
-  background:transparent;position:relative;
+  background:rgba(8,8,8,.98);position:relative;z-index:10;
 }
 #reactLayer{position:absolute;bottom:100%;left:0;right:0;height:80px;pointer-events:none;overflow:visible;z-index:50}
 /* Side controls */
@@ -1971,9 +1971,6 @@ const origST=window.startTalking,origSp=window.stopTalking;
 if(origST){window.startTalking=function(){pttOuter2?.classList.add('talking');origST.call(this);};}
 if(origSp){window.stopTalking=function(){pttOuter2?.classList.remove('talking');origSp.call(this);};}
 
-// Init: start with map tab (collapsed sheet)
-openPanel(null,tabMap);
-setTimeout(()=>{try{leafletFull?.invalidateSize();}catch(e){}},500);
 // Init: start with map tab (collapsed sheet)
 openPanel(null,tabMap);
 setTimeout(()=>{try{leafletFull?.invalidateSize();}catch(e){}},500);
