@@ -743,7 +743,7 @@ input{font-family:inherit;color:var(--text);background:none;border:none;outline:
 
     <!-- TABBAR -->
     <div class="tabbar">
-      <button class="ti active" id="tabMembers" data-panel="panelMembers">
+      <button class="ti" id="tabMembers" data-panel="panelMembers">
         <div class="tdot"></div>
         <span class="tii">👥</span>
         <span class="til">Đội nhóm</span>
@@ -1720,11 +1720,24 @@ const allTabs0=[tabMap,tabChat,tabMembers,tabSettings];
 const allPanels0=[panelChat,panelMembers,panelSettings].filter(Boolean);
 // Tab listeners handled by v11 override below
 function switchPanel(pid,tel){
-  allPanels0.forEach(p=>p.classList.remove('active'));allTabs0.forEach(t=>t.classList.remove('active'));
-  if($(pid))$(pid).classList.add('active');if(tel)tel.classList.add('active');
+  // Remove active from ALL panels (cả 2 hệ thống)
+  [panelChat,panelMembers,panelSettings].filter(Boolean).forEach(p=>p.classList.remove('active'));
+  allTabs0.forEach(t=>t.classList.remove('active'));
+  if(pid && pid!=='panelMap'){
+    const p=document.getElementById(pid);
+    if(p)p.classList.add('active');
+  }
+  if(tel)tel.classList.add('active');
   activePanel=pid;
-  if(pid==='panelChat'){chatUnread=0;tabChat.classList.remove('has-dot')}
-  if(pid==='panelMap')setTimeout(()=>{try{leafletFull?.invalidateSize()}catch(e){}},150);
+  if(pid==='panelChat'){chatUnread=0;tabChat?.classList.remove('has-dot')}
+  if(pid==='panelMap'||!pid){
+    if(videoGrid)videoGrid.classList.remove('vis');
+    setBSH(BS_MIN);
+    setTimeout(()=>{try{leafletFull?.invalidateSize()}catch(e){}},150);
+    setTimeout(()=>{ if(typeof renderVidGrid==='function') renderVidGrid(); },250);
+  } else {
+    setBSH(BS_FULL);
+  }
 }
 
 
@@ -2019,7 +2032,9 @@ const allTabsV11=[tabMembers,tabChat,tabMap,tabSettings].filter(Boolean);
 let activeTabV11='members';
 
 function closeAllPanels(){
-  allPanelsV11.forEach(p=>{p.classList.remove('active');});
+  // Close tất cả panels từ cả 2 hệ thống
+  const allP=[panelChat,panelMembers,panelSettings].filter(Boolean);
+  allP.forEach(p=>p.classList.remove('active'));
   allTabsV11.forEach(t=>t.classList.remove('active'));
 }
 
@@ -2142,7 +2157,9 @@ const origST=window.startTalking,origSp=window.stopTalking;
 if(origST){window.startTalking=function(){pttOuter2?.classList.add('talking');origST.call(this);};}
 if(origSp){window.stopTalking=function(){pttOuter2?.classList.remove('talking');origSp.call(this);};}
 
-// Init: start with map tab (collapsed sheet)
+// Init: đảm bảo tất cả panels đóng, bắt đầu với tab bản đồ
+[panelChat,panelMembers,panelSettings].filter(Boolean).forEach(p=>p.classList.remove('active'));
+allTabsV11.forEach(t=>t.classList.remove('active'));
 openPanel(null,tabMap);
 setTimeout(()=>{try{leafletFull?.invalidateSize();}catch(e){}},500);
 })();
