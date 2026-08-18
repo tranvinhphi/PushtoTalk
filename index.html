@@ -486,16 +486,63 @@ input{font-family:inherit;color:var(--text);background:none;border:none;outline:
 @media(min-width:900px){#roomScreen{width:440px;height:93dvh}}
 </style>
 
+<script>
+// Early global functions — must exist before onclick handlers fire
+function switchAppTab(tab){
+  var kScreen=document.getElementById('kidsScreen');
+  var rScreen=document.getElementById('roomScreen');
+  var jScreen=document.getElementById('joinScreen');
+  var dScreen=document.getElementById('discoverScreen');
+  var wScreen=document.getElementById('waitScreen');
+  var btnW=document.getElementById('appTabWalkie');
+  var btnK=document.getElementById('appTabKids');
+  if(tab==='kids'){
+    if(kScreen)kScreen.style.display='block';
+    [rScreen,jScreen,dScreen,wScreen].forEach(function(s){if(s)s.style.zIndex='10';});
+    if(btnW)btnW.style.color='rgba(255,255,255,.4)';
+    if(btnK)btnK.style.color='#f59e0b';
+    if(window.kRender)window.kRender();
+    if(window.kUpdateStats)window.kUpdateStats();
+  }else{
+    if(kScreen)kScreen.style.display='none';
+    [rScreen,jScreen,dScreen,wScreen].forEach(function(s){if(s)s.style.zIndex='';});
+    if(btnW)btnW.style.color='#f59e0b';
+    if(btnK)btnK.style.color='rgba(255,255,255,.4)';
+    setTimeout(function(){try{if(typeof leafletFull!=='undefined'&&leafletFull)leafletFull.invalidateSize();}catch(e){}},300);
+  }
+  window._currentAppTab=tab;
+}
+function toggleMuteMic(btn){
+  if(!btn)return;
+  var isMuted=btn.getAttribute('data-muted')==='true';
+  if(isMuted){
+    btn.setAttribute('data-muted','false');
+    btn.innerHTML='<i class="fa-solid fa-microphone-slash text-xl"></i>';
+    btn.style.background='rgba(28,26,16,1)';
+    btn.style.borderColor='rgba(255,255,255,.1)';
+    btn.style.color='rgba(255,255,255,.4)';
+    btn.querySelector&&btn.querySelector('.fa-sm')&&null;
+  }else{
+    btn.setAttribute('data-muted','true');
+    btn.innerHTML='<i class="fa-solid fa-microphone text-xl"></i>';
+    btn.style.background='rgba(248,113,113,.15)';
+    btn.style.borderColor='rgba(248,113,113,.4)';
+    btn.style.color='#f87171';
+  }
+}
+window._currentAppTab='walkie';
+</script>
 </head>
 <body>
 <div id="toastLayer"></div>
+<button id="waCam" style="display:none"></button>
 
 <!-- ── APP TAB NAV (Top level) ────────────────────────── -->
 <div id="appTabNav" style="
-  display:none;
+  display:flex;
   position:fixed;bottom:0;left:0;right:0;z-index:9998;
   background:#1a1710;border-top:1px solid rgba(245,158,11,.2);
-  display:flex;padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
   box-shadow:0 -4px 20px rgba(0,0,0,0.4);
 ">
   <button class="app-tab-btn active" id="appTabWalkie" onclick="switchAppTab('walkie')"
@@ -1069,7 +1116,7 @@ input{font-family:inherit;color:var(--text);background:none;border:none;outline:
 // ── V11 TRAILTAK UI OVERRIDES ─────────────────────────
 
 const SRV='https://pushtotalk-anqr.onrender.com';
-const CHUNK=350,VFPS=5,VW=160,VH=120,SK='bdv1230';
+const CHUNK=350,VFPS=5,VW=160,VH=120,SK='bdv1232';
 const EMOJIS=['😂','🤣','😭','😢','😡','😠','😱','😍','🥳','😴','🤔','👍','👎','❤️','🔥','💯','🎉','😅','🙄','🤯'];
 const $=id=>document.getElementById(id);
 
@@ -1920,7 +1967,7 @@ function renderMembers(justJoined=[]){
 }
 
 // CAMERA
-waCam.addEventListener('click',()=>{if(camOn)stopCam();else startCam()});
+if(waCam)waCam.addEventListener('click',()=>{if(camOn)stopCam();else startCam()});
 async function startCam(){try{camStream=await navigator.mediaDevices.getUserMedia({video:{width:VW,height:VH,facingMode:'user'},audio:false});camOn=true;waCam.classList.add('on');if(socket?.connected)socket.emit('camera-state',{hasCamera:true,cameraOn:true});renderVidGrid();startVidSend();toast('📷 Camera đã bật','ok')}catch(e){toast('Không bật được camera','err')}}
 function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}if(camVideo){camVideo.srcObject=null;camVideo=null}camOn=false;waCam.classList.remove('on');if(socket?.connected)socket.emit('camera-state',{hasCamera:false,cameraOn:false});if(vidSendIv){clearInterval(vidSendIv);vidSendIv=null}renderVidGrid()}
 function startVidSend(){if(vidSendIv)clearInterval(vidSendIv);camVideo=document.createElement('video');camVideo.srcObject=camStream;camVideo.muted=true;camVideo.play();vidSendIv=setInterval(()=>{if(!camOn||!socket?.connected||!camVideo)return;try{const o=document.createElement('canvas');o.width=VW;o.height=VH;o.getContext('2d').drawImage(camVideo,0,0,VW,VH);socket.emit('video-frame',{frame:o.toDataURL('image/jpeg',.5)});const mc=vidCanvases[currentUsername];if(mc)mc.getContext('2d').drawImage(camVideo,0,0,mc.width,mc.height)}catch(e){}},1000/VFPS)}
@@ -2547,30 +2594,8 @@ setInterval(function(){
   });
 },1000);
 
-// App tab switcher — must be global
-window.switchAppTab=function(tab){
-  var kScreen=document.getElementById('kidsScreen');
-  var rScreen=document.getElementById('roomScreen');
-  var jScreen=document.getElementById('joinScreen');
-  var dScreen=document.getElementById('discoverScreen');
-  var wScreen=document.getElementById('waitScreen');
-  var btnW=document.getElementById('appTabWalkie');
-  var btnK=document.getElementById('appTabKids');
-  window.kCurrentAppTab=tab;
-  if(tab==='kids'){
-    if(kScreen)kScreen.style.display='block';
-    [rScreen,jScreen,dScreen,wScreen].forEach(function(s){if(s)s.style.zIndex='10';});
-    if(btnW){btnW.classList.remove('active');}
-    if(btnK){btnK.classList.add('kids-active');btnK.classList.remove('app-tab-btn');}
-    window.kRender();window.kUpdateStats();
-  }else{
-    if(kScreen)kScreen.style.display='none';
-    [rScreen,jScreen,dScreen,wScreen].forEach(function(s){if(s)s.style.zIndex='';});
-    if(btnW)btnW.classList.add('active');
-    if(btnK){btnK.classList.remove('kids-active');}
-    setTimeout(function(){try{leafletFull&&leafletFull.invalidateSize();}catch(e){}},300);
-  }
-};
+// switchAppTab defined in <head>
+
 window.kCurrentAppTab='walkie';
 
 // Init kids on load
@@ -2604,6 +2629,14 @@ document.addEventListener('DOMContentLoaded',function(){
   if(waTTS2)waTTS2.addEventListener('click',function(){
     var w=document.getElementById('waTTS');if(w)w.click();
   });
+  // Wire muteMicBtn to actual mute (waMute behavior)
+  var muteMicBtn=document.getElementById('muteMicBtn');
+  if(muteMicBtn)muteMicBtn.addEventListener('click',function(){
+    // Visual handled by onclick=toggleMuteMic(this)
+    // Also trigger actual mic mute if connected
+    if(typeof toggleLocalMute==='function')toggleLocalMute();
+  });
+
   var mcLoc=document.getElementById('mcLoc');
   if(mcLoc)mcLoc.addEventListener('click',function(){
     if(navigator.geolocation)navigator.geolocation.getCurrentPosition(function(p){
